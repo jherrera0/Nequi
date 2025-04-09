@@ -1,0 +1,15 @@
+spring:
+  r2dbc:
+    url: r2dbc:mysql://nequi.coxgk8a6a9uv.us-east-1.rds.amazonaws.com:3306/nequi?sslMode=DISABLED&tcpKeepAlive=true
+    username: admin
+    password: uq0YpeHk1155VghDiAUG
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      max-create-connection-time: 10s
+      validation-query: SELECT 1
+
+server:
+  port: 8090
