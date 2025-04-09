@@ -18,9 +18,32 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot + WebFlux
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
+	//database
+	implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
+
+	// Connection Pool
+	implementation 'io.r2dbc:r2dbc-pool'
+
+
+	// Lombok para evitar boilerplate
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//documentation
+// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-ui
+	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
+
+	// MapStruct
+	implementation 'org.mapstruct:mapstruct:1.6.0.Beta2'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0.Beta2'
+
+	// Reactor Test
 	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
