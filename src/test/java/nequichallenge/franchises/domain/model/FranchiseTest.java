@@ -1,5 +1,6 @@
 package nequichallenge.franchises.domain.model;
 
+import nequichallenge.franchises.domain.exception.FranchiseNameEmptyException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -52,5 +53,39 @@ class FranchiseTest {
     void shouldHandleNullBranchesGracefully() {
         Franchise franchise = new Franchise(1, "Franchise Name", null);
         assertNull(franchise.getBranches());
+    }
+    @Test
+    void throwsExceptionWhenFranchiseNameIsNull() {
+        FranchiseNameEmptyException exception = assertThrows(FranchiseNameEmptyException.class,
+                this::createFranchiseWithName);
+        assertNotNull(exception);
+    }
+
+    @Test
+    void allowsSettingValidFranchiseName() {
+        Franchise franchise = new Franchise();
+        franchise.setName("Valid Name");
+        assertEquals("Valid Name", franchise.getName());
+    }
+
+    @Test
+    void throwsExceptionWhenSettingNullFranchiseName() {
+        Franchise franchise = new Franchise();
+        FranchiseNameEmptyException exception = assertThrows(FranchiseNameEmptyException.class, () -> {
+            franchise.setName(null);
+        });
+        assertNotNull(exception);
+    }
+
+    @Test
+    void throwsExceptionWhenSettingEmptyFranchiseName() {
+        Franchise franchise = new Franchise();
+        FranchiseNameEmptyException exception = assertThrows(FranchiseNameEmptyException.class, () -> {
+            franchise.setName("  ");
+        });
+        assertNotNull(exception);
+    }
+    private void createFranchiseWithName() {
+        new Franchise(1, null, List.of());
     }
 }

@@ -74,4 +74,29 @@ class FranchiseAdapterTest {
         assertFalse(result.block());
         verify(franchiseRepository).existsByName(franchiseName);
     }
+    @Test
+    @DisplayName("should return true when franchise exists by id")
+    void shouldReturnTrueWhenFranchiseExistsById() {
+        Integer franchiseId = 1;
+
+        when(franchiseRepository.existsById(franchiseId)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = franchiseAdapter.franchiseExistsById(franchiseId);
+
+        assertTrue(result.block());
+        verify(franchiseRepository).existsById(franchiseId);
+    }
+
+    @Test
+    @DisplayName("should return false when franchise does not exist by id")
+    void shouldReturnFalseWhenFranchiseDoesNotExistById() {
+        Integer franchiseId = 999;
+
+        when(franchiseRepository.existsById(franchiseId)).thenReturn(Mono.just(false));
+
+        Mono<Boolean> result = franchiseAdapter.franchiseExistsById(franchiseId);
+
+        assertFalse(result.block());
+        verify(franchiseRepository).existsById(franchiseId);
+    }
 }

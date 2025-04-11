@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import nequichallenge.franchises.application.http.dto.request.AddBranchDtoRequest;
 import nequichallenge.franchises.application.http.handler.interfaces.IBranchHandler;
 import nequichallenge.franchises.application.http.mapper.IBranchDtoMapper;
-import nequichallenge.franchises.application.http.mapper.IFranchiseDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
