@@ -3,6 +3,7 @@ package nequichallenge.franchises.application.http.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nequichallenge.franchises.application.http.dto.request.CreateFranchiseDtoRequest;
+import nequichallenge.franchises.application.http.handler.interfaces.IFranchiseHandler;
 import nequichallenge.franchises.application.http.mapper.IFranchiseDtoMapper;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
 import org.springframework.http.MediaType;

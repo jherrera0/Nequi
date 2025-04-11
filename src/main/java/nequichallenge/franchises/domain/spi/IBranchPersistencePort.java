@@ -1,0 +1,9 @@
+package nequichallenge.franchises.domain.spi;
+
+import nequichallenge.franchises.domain.model.Branch;
+import reactor.core.publisher.Mono;
+
+public interface IBranchPersistencePort {
+    Mono<Branch> addBranch(Integer franchiseId, String name);
+    Mono<Boolean> existsByName(String name);
+}

@@ -1,12 +1,11 @@
 package nequichallenge.franchises.infrastructure.input;
 
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import nequichallenge.franchises.application.http.handler.interfaces.IFranchiseHandler;
+import nequichallenge.franchises.application.http.handler.interfaces.IBranchHandler;
 import nequichallenge.franchises.domain.util.ConstRoute;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
@@ -16,34 +15,36 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
-public class FranchiseRoute {
+public class BranchRoute {
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/franchise/create",
+                    path = "/branch/addBranch",
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
-                    beanClass = IFranchiseHandler.class,
-                    beanMethod = "createFranchise",
+                    beanClass = IBranchHandler.class,
+                    beanMethod = "addBranch",
                     operation = @Operation(
                             operationId = "createFranchise",
-                            summary = "Crear una nueva franquicia",
-                            description = "Crea una nueva franquicia en el sistema",
+                            summary = "Crear una nueva sucursal",
+                            description = "Crea una nueva sucursal asociada a una franquicia en el sistema",
                             requestBody = @RequestBody(
                                     required = true,
                                     content = @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                                             examples = {
                                                     @ExampleObject(
-                                                            name = "FranquiciaEjemplo",
-                                                            summary = "Ejemplo de franquicia",
+                                                            name = "Sucursal Ejemplo",
+                                                            summary = "Ejemplo de sucursal",
                                                             value = """
                                                                 {
-                                                                  "name": "Franquicia Caribe"
+                                                                  "franchiseId": 1,
+                                                                  "name": "Sucursal Cartagena"
                                                                 }
                                                                 """
                                                     )
@@ -53,15 +54,16 @@ public class FranchiseRoute {
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
-                                            description = "Franquicia creada exitosamente",
+                                            description = "Sucursal creada exitosamente",
                                             content = @Content(
                                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                                                     examples = @ExampleObject(
-                                                            name = "FranquiciaCreada",
+                                                            name = "Sucursal Creada",
                                                             summary = "Respuesta exitosa",
                                                             value = """
                                                                 {
-                                                                  "name": "Franquicia Caribe"
+                                                                  "franchiseId": 1,
+                                                                  "name": "Sucursal Cartagena"
                                                                 }
                                                                 """
                                                     )
@@ -69,31 +71,15 @@ public class FranchiseRoute {
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Solicitud inválida debido a datos incorrectos o a incumplimiento de restricciones de negocio",
-                                            content = @Content(
-                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                                    examples = @ExampleObject(
-                                                            name = "ErrorSolicitudInvalida",
-                                                            summary = "Error en la solicitud",
-                                                            value = """
-                                                                    {
-                                                                      "status": 400,
-                                                                      "error": "Bad Request",
-                                                                      "message": "Franchise already exists",
-                                                                      "path": "/franchise/create"
-                                                                    }
-                                                                """
-                                                    )
-                                            )
+                                            description = "Solicitud inválida debido a datos incorrectos o a incumplimiento de restricciones de negocio"
                                     )
                             }
                     )
             )
     })
 
-
-    public RouterFunction<ServerResponse> franchiseRoutes(IFranchiseHandler franchiseHandler) {
-        return route(POST(ConstRoute.FRANCHISE+ConstRoute.CREATE),
-                franchiseHandler::createFranchise);
+    public RouterFunction<ServerResponse> branchRoutes(IBranchHandler branchHandler) {
+        return route(POST(ConstRoute.BRANCH_REST_ROUTE + ConstRoute.ADD_BRANCH_REST_ROUTE),
+                branchHandler::addBranch);
     }
 }
