@@ -17,4 +17,9 @@ public class FranchiseAdapter implements IFranchisePersistencePort {
         return franchiseRepository.save(franchiseEntityMapper.toFranchiseEntity(franchise))
                 .map(franchiseEntityMapper::toFranchise);
     }
+
+    @Override
+    public Mono<Boolean> franchiseExistsByName(String name) {
+        return franchiseRepository.existsByName(name);
+    }
 }
