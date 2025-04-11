@@ -12,5 +12,5 @@ import java.util.List;
 public class BranchDtoResponse {
     private Integer id;
     private String name;
-    private List<ProductDtoResponse> franchises;
+    private List<ProductDtoResponse> products;
 }

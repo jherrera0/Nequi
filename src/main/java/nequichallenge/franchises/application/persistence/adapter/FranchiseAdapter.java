@@ -22,4 +22,9 @@ public class FranchiseAdapter implements IFranchisePersistencePort {
     public Mono<Boolean> franchiseExistsByName(String name) {
         return franchiseRepository.existsByName(name);
     }
+
+    @Override
+    public Mono<Boolean> franchiseExistsById(Integer id) {
+        return franchiseRepository.existsById(id);
+    }
 }
