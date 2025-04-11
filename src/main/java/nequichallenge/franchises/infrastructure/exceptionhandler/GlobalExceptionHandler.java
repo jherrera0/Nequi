@@ -1,7 +1,10 @@
 package nequichallenge.franchises.infrastructure.exceptionhandler;
 
 import lombok.AllArgsConstructor;
+import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
+import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
 import nequichallenge.franchises.domain.exception.FranchiseAlreadyExistsException;
+import nequichallenge.franchises.domain.exception.FranchiseNotFoundException;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -15,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 @AllArgsConstructor
 @Order(-2)
-public class FranchiseExceptionHandler implements ErrorWebExceptionHandler {
+public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
@@ -23,12 +26,17 @@ public class FranchiseExceptionHandler implements ErrorWebExceptionHandler {
         int status;
         String message;
 
-        if (ex instanceof FranchiseAlreadyExistsException) {
+        if (ex instanceof FranchiseAlreadyExistsException ||
+                ex instanceof BranchAlreadyExistException ||
+        ex instanceof BranchNameEmptyException) {
             status = HttpStatus.BAD_REQUEST.value();
+            message = ex.getMessage();
+        } else if (ex instanceof FranchiseNotFoundException) {
+            status = HttpStatus.NOT_FOUND.value();
             message = ex.getMessage();
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR.value();
-            message = "Ocurrió un error inesperado";
+            message = ex.getMessage();
         }
 
         String path = exchange.getRequest().getPath().value();

@@ -1,11 +1,17 @@
 package nequichallenge.franchises.infrastructure.configuration;
 
 import lombok.AllArgsConstructor;
+import nequichallenge.franchises.application.persistence.adapter.BranchAdapter;
 import nequichallenge.franchises.application.persistence.adapter.FranchiseAdapter;
+import nequichallenge.franchises.application.persistence.mapper.IBranchEntityMapper;
 import nequichallenge.franchises.application.persistence.mapper.IFranchiseEntityMapper;
+import nequichallenge.franchises.application.persistence.repository.IBranchRepository;
 import nequichallenge.franchises.application.persistence.repository.IFranchiseRepository;
+import nequichallenge.franchises.domain.api.IBranchServicePort;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
+import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
 import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
+import nequichallenge.franchises.domain.usecase.BranchCase;
 import nequichallenge.franchises.domain.usecase.FranchiseCase;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +23,8 @@ import org.springframework.r2dbc.core.DatabaseClient;
 public class BeanConfiguration {
     private final IFranchiseEntityMapper franchiseEntityMapper;
     private final IFranchiseRepository franchiseRepository;
+    private final IBranchEntityMapper branchEntityMapper;
+    private final IBranchRepository branchRepository;
 
     @Bean
     public IFranchiseServicePort franchiseService() {
@@ -28,14 +36,31 @@ public class BeanConfiguration {
         return new FranchiseAdapter(franchiseEntityMapper, franchiseRepository);
     }
     @Bean
+    public IBranchServicePort branchService() {
+        return new BranchCase(branchPersistencePort(),franchisePersistencePort());
+    }
+
+    @Bean
+    public IBranchPersistencePort branchPersistencePort() {
+        return new BranchAdapter(branchRepository,branchEntityMapper);
+    }
+
+    @Bean
     public ApplicationRunner initializer(DatabaseClient client) {
         return args -> client.sql("""
         CREATE TABLE IF NOT EXISTS franchise (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             CONSTRAINT uk_franchise_name UNIQUE (name)
-        )
+        );
+        CREATE TABLE IF NOT EXISTS branch (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            franchise_id BIGINT NOT NULL,
+            CONSTRAINT fk_branch_franchise FOREIGN KEY (franchise_id) REFERENCES franchise(id) ON DELETE CASCADE
+        );
     """).fetch().rowsUpdated().subscribe();
     }
+
 
 }

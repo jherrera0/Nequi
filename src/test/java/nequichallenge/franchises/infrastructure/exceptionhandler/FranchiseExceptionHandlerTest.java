@@ -16,11 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FranchiseExceptionHandlerTest {
 
-    private FranchiseExceptionHandler handler;
+    private GlobalExceptionHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new FranchiseExceptionHandler();
+        handler = new GlobalExceptionHandler();
     }
 
     @Test

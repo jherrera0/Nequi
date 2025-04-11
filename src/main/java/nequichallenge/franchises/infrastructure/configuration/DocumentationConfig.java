@@ -25,4 +25,12 @@ public class DocumentationConfig {
                 .pathsToMatch("/franchise/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi branchApi() {
+        return GroupedOpenApi.builder()
+                .group("branch")
+                .pathsToMatch("/branch/**")
+                .build();
+    }
 }
