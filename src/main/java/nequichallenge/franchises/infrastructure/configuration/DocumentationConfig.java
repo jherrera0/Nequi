@@ -22,7 +22,7 @@ public class DocumentationConfig {
     public GroupedOpenApi franchiseApi() {
         return GroupedOpenApi.builder()
                 .group("franchise")
-                .pathsToMatch("/api/franchises/**")
+                .pathsToMatch("/franchise/**")
                 .build();
     }
 }

@@ -64,40 +64,5 @@ class FranchiseHandlerTest {
             verify(franchiseServicePort).createFranchise(domain);
             verify(franchiseDtoMapper).toDtoResponse(domain);
         }
-
-        @Test
-        @DisplayName("returns bad request when request body is empty")
-        void returnsBadRequestWhenRequestBodyIsEmpty() {
-            ServerRequest serverRequest = mock(ServerRequest.class);
-            when(serverRequest.bodyToMono(CreateFranchiseDtoRequest.class)).thenReturn(Mono.empty());
-
-            Mono<ServerResponse> response = franchiseHandler.createFranchise(serverRequest);
-
-            StepVerifier.create(response)
-                    .expectNextMatches(serverResponse -> serverResponse.statusCode().is4xxClientError())
-                    .verifyComplete();
-        }
-
-        @Test
-        @DisplayName("returns bad request when an error occurs during franchise creation")
-        void returnsBadRequestWhenErrorOccursDuringFranchiseCreation() {
-            CreateFranchiseDtoRequest requestDto = new CreateFranchiseDtoRequest();
-            Franchise domain = new Franchise();
-
-            when(franchiseDtoMapper.toDomain(requestDto)).thenReturn(domain);
-            when(franchiseServicePort.createFranchise(domain)).thenReturn(Mono.error(new RuntimeException("Error")));
-
-            ServerRequest serverRequest = mock(ServerRequest.class);
-            when(serverRequest.bodyToMono(CreateFranchiseDtoRequest.class)).thenReturn(Mono.just(requestDto));
-
-            Mono<ServerResponse> response = franchiseHandler.createFranchise(serverRequest);
-
-            StepVerifier.create(response)
-                    .expectNextMatches(serverResponse -> serverResponse.statusCode().is4xxClientError())
-                    .verifyComplete();
-
-            verify(franchiseDtoMapper).toDomain(requestDto);
-            verify(franchiseServicePort).createFranchise(domain);
-        }
     }
 }

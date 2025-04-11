@@ -26,15 +26,7 @@ public class FranchiseHandler implements IFranchiseHandler {
                 .flatMap(franchiseServicePort::createFranchise)
                 .map(franchiseDtoMapper::toDtoResponse)
                 .flatMap(franchiseDtoResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(franchiseDtoResponse))
-                .onErrorResume(
-                        error -> {
-                            log.error("Error al crear franchise: {}", error.getMessage());
-                            return ServerResponse.badRequest()
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .bodyValue(error.getMessage());
-                        }
-                );
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(franchiseDtoResponse));
 
     }
 }

@@ -49,4 +49,29 @@ class FranchiseAdapterTest {
             verify(franchiseEntityMapper).toFranchise(franchiseEntity);
         }
     }
+    @Test
+    @DisplayName("should return true when franchise exists by name")
+    void shouldReturnTrueWhenFranchiseExistsByName() {
+        String franchiseName = "Existing Franchise";
+
+        when(franchiseRepository.existsByName(franchiseName)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = franchiseAdapter.franchiseExistsByName(franchiseName);
+
+        assertTrue(result.block());
+        verify(franchiseRepository).existsByName(franchiseName);
+    }
+
+    @Test
+    @DisplayName("should return false when franchise does not exist by name")
+    void shouldReturnFalseWhenFranchiseDoesNotExistByName() {
+        String franchiseName = "Non-Existing Franchise";
+
+        when(franchiseRepository.existsByName(franchiseName)).thenReturn(Mono.just(false));
+
+        Mono<Boolean> result = franchiseAdapter.franchiseExistsByName(franchiseName);
+
+        assertFalse(result.block());
+        verify(franchiseRepository).existsByName(franchiseName);
+    }
 }
