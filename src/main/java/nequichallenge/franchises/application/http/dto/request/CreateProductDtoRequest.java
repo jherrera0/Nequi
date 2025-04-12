@@ -1,4 +1,4 @@
-package nequichallenge.franchises.application.http.dto.response;
+package nequichallenge.franchises.application.http.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDtoResponse {
-    private Integer id;
+public class CreateProductDtoRequest {
     private String name;
     private Integer stock;
-    private Boolean isActive;
+    private Integer branchId;
 }
