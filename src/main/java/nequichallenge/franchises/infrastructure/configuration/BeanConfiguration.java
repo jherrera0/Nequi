@@ -3,16 +3,22 @@ package nequichallenge.franchises.infrastructure.configuration;
 import lombok.AllArgsConstructor;
 import nequichallenge.franchises.application.persistence.adapter.BranchAdapter;
 import nequichallenge.franchises.application.persistence.adapter.FranchiseAdapter;
+import nequichallenge.franchises.application.persistence.adapter.ProductAdapter;
 import nequichallenge.franchises.application.persistence.mapper.IBranchEntityMapper;
 import nequichallenge.franchises.application.persistence.mapper.IFranchiseEntityMapper;
+import nequichallenge.franchises.application.persistence.mapper.IProductEntityMapper;
 import nequichallenge.franchises.application.persistence.repository.IBranchRepository;
 import nequichallenge.franchises.application.persistence.repository.IFranchiseRepository;
+import nequichallenge.franchises.application.persistence.repository.IProductRepository;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
+import nequichallenge.franchises.domain.api.IProductServicePort;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
 import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
+import nequichallenge.franchises.domain.spi.IProductPersistencePort;
 import nequichallenge.franchises.domain.usecase.BranchCase;
 import nequichallenge.franchises.domain.usecase.FranchiseCase;
+import nequichallenge.franchises.domain.usecase.ProductCase;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +31,8 @@ public class BeanConfiguration {
     private final IFranchiseRepository franchiseRepository;
     private final IBranchEntityMapper branchEntityMapper;
     private final IBranchRepository branchRepository;
+    private final IProductEntityMapper productEntityMapper;
+    private final IProductRepository productRepository;
 
     @Bean
     public IFranchiseServicePort franchiseService() {
@@ -46,6 +54,16 @@ public class BeanConfiguration {
     }
 
     @Bean
+    public IProductServicePort productService() {
+        return new ProductCase(productPersistencePort(),branchPersistencePort());
+    }
+
+    @Bean
+    public IProductPersistencePort productPersistencePort() {
+        return new ProductAdapter(productRepository,productEntityMapper);
+    }
+
+    @Bean
     public ApplicationRunner initializer(DatabaseClient client) {
         return args -> client.sql("""
         CREATE TABLE IF NOT EXISTS franchise (
@@ -59,6 +77,15 @@ public class BeanConfiguration {
             franchise_id BIGINT NOT NULL,
             CONSTRAINT fk_branch_franchise FOREIGN KEY (franchise_id) REFERENCES franchise(id) ON DELETE CASCADE
         );
+    CREATE TABLE IF NOT EXISTS product (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            isActive BOOLEAN NOT NULL,
+            stock INT NOT NULL,
+            branch_id BIGINT NOT NULL,
+            CONSTRAINT fk_branch_product FOREIGN KEY (branch_id) REFERENCES branch(id) ON DELETE CASCADE
+        );
+    
     """).fetch().rowsUpdated().subscribe();
     }
 
