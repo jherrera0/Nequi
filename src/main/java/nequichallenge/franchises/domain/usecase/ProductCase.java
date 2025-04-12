@@ -1,7 +1,7 @@
 package nequichallenge.franchises.domain.usecase;
 
 import nequichallenge.franchises.domain.api.IProductServicePort;
-import nequichallenge.franchises.domain.exception.ProductAlreadyExistsException;
+import nequichallenge.franchises.domain.exception.*;
 import nequichallenge.franchises.domain.model.Product;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
 import nequichallenge.franchises.domain.spi.IProductPersistencePort;
@@ -20,6 +20,8 @@ public class ProductCase implements IProductServicePort {
 
     @Override
     public Mono<Product> createProduct(Integer branchId,Product product) {
+        Mono<Product> error = validateParams(branchId, product);
+        if (error != null) return error;
         product.setIsActive(true);
         return branchPersistencePort.existsById(branchId)
                 .flatMap(exists -> {
@@ -32,7 +34,20 @@ public class ProductCase implements IProductServicePort {
                                     return productPersistencePort.createProduct(branchId, product);
                                 });
                     }
-                    return Mono.error(new ProductAlreadyExistsException());
+                    return Mono.error(new BranchNotFoundException());
                 });
+    }
+
+    private static Mono<Product> validateParams(Integer branchId, Product product) {
+        if (product.getName() == null || product.getName().isEmpty()) {
+            return Mono.error(new ProductNameEmptyException());
+        }
+        if (product.getStock() == null || product.getStock() <= ConstValidations.ZERO) {
+            return Mono.error(new ProductStockInvalidException());
+        }
+        if(branchId == null|| branchId <= ConstValidations.ZERO) {
+            return Mono.error(new BranchIdInvalidException());
+        }
+        return null;
     }
 }

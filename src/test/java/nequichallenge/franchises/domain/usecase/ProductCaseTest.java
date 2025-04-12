@@ -1,6 +1,6 @@
 package nequichallenge.franchises.domain.usecase;
 
-import nequichallenge.franchises.domain.exception.ProductAlreadyExistsException;
+import nequichallenge.franchises.domain.exception.*;
 import nequichallenge.franchises.domain.model.Product;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
 import nequichallenge.franchises.domain.spi.IProductPersistencePort;
@@ -29,6 +29,7 @@ class ProductCaseTest {
     void createProduct_createsProductWhenBranchExistsAndProductDoesNotExist() {
         Integer branchId = 1;
         Product product = new Product();
+        product.setStock(10);
         product.setName("New Product");
 
         Mockito.when(branchPersistencePort.existsById(branchId)).thenReturn(Mono.just(true));
@@ -45,11 +46,12 @@ class ProductCaseTest {
         Integer branchId = 1;
         Product product = new Product();
         product.setName("New Product");
+        product.setStock(10);
 
         Mockito.when(branchPersistencePort.existsById(branchId)).thenReturn(Mono.just(false));
 
         StepVerifier.create(productCase.createProduct(branchId, product))
-                .expectError(ProductAlreadyExistsException.class)
+                .expectError(BranchNotFoundException.class)
                 .verify();
     }
 
@@ -57,6 +59,7 @@ class ProductCaseTest {
     void createProduct_throwsErrorWhenProductAlreadyExists() {
         Integer branchId = 1;
         Product product = new Product();
+        product.setStock(1);
         product.setName("Existing Product");
 
         Mockito.when(branchPersistencePort.existsById(branchId)).thenReturn(Mono.just(true));
@@ -64,6 +67,42 @@ class ProductCaseTest {
 
         StepVerifier.create(productCase.createProduct(branchId, product))
                 .expectError(ProductAlreadyExistsException.class)
+                .verify();
+    }
+
+    @Test
+    void createProductThrowsErrorWhenBranchIdIsInvalid() {
+        Integer branchId = -1;
+        Product product = new Product();
+        product.setName("Invalid Branch Product");
+        product.setStock(10);
+
+        StepVerifier.create(productCase.createProduct(branchId, product))
+                .expectError(BranchIdInvalidException.class)
+                .verify();
+    }
+
+    @Test
+    void createProductThrowsErrorWhenProductNameIsEmpty() {
+        Integer branchId = 1;
+        Product product = new Product();
+        product.setName("");
+        product.setStock(10);
+
+        StepVerifier.create(productCase.createProduct(branchId, product))
+                .expectError(ProductNameEmptyException.class)
+                .verify();
+    }
+
+    @Test
+    void createProductThrowsErrorWhenProductStockIsInvalid() {
+        Integer branchId = 1;
+        Product product = new Product();
+        product.setName("Invalid Stock Product");
+        product.setStock(0);
+
+        StepVerifier.create(productCase.createProduct(branchId, product))
+                .expectError(ProductStockInvalidException.class)
                 .verify();
     }
 }
