@@ -63,7 +63,6 @@ public class ProductRoute {
                                                             summary = "Respuesta exitosa",
                                                             value = """
                                                                 {
-                                                                  "id": 10,
                                                                   "branchId": 1,
                                                                   "name": "Latte",
                                                                   "price": 5
