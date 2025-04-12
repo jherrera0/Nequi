@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 public interface IBranchPersistencePort {
     Mono<Branch> addBranch(Integer franchiseId, String name);
     Mono<Boolean> existsByName(String name);
+
+    Mono<Boolean> existsById(Integer branchId);
 }
