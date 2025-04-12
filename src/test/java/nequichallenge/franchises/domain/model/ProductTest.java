@@ -44,4 +44,10 @@ class ProductTest {
         product.setStock(20);
         assertEquals(20, product.getStock());
     }
+    @Test
+    void shouldAllowUpdatingProductIsActive() {
+        Product product = new Product();
+        product.setIsActive(true);
+        assertTrue(product.getIsActive());
+    }
 }

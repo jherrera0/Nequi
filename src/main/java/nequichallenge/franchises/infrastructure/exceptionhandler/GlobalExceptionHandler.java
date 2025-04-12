@@ -1,10 +1,7 @@
 package nequichallenge.franchises.infrastructure.exceptionhandler;
 
 import lombok.AllArgsConstructor;
-import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
-import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
-import nequichallenge.franchises.domain.exception.FranchiseAlreadyExistsException;
-import nequichallenge.franchises.domain.exception.FranchiseNotFoundException;
+import nequichallenge.franchises.domain.exception.*;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -28,7 +25,8 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 
         if (ex instanceof FranchiseAlreadyExistsException ||
                 ex instanceof BranchAlreadyExistException ||
-        ex instanceof BranchNameEmptyException) {
+                ex instanceof BranchNameEmptyException ||
+                ex instanceof ProductAlreadyExistsException) {
             status = HttpStatus.BAD_REQUEST.value();
             message = ex.getMessage();
         } else if (ex instanceof FranchiseNotFoundException) {
