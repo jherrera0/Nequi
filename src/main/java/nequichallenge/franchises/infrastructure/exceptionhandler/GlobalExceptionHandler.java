@@ -26,10 +26,15 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         if (ex instanceof FranchiseAlreadyExistsException ||
                 ex instanceof BranchAlreadyExistException ||
                 ex instanceof BranchNameEmptyException ||
-                ex instanceof ProductAlreadyExistsException) {
+                ex instanceof ProductAlreadyExistsException ||
+                ex instanceof  BranchIdInvalidException ||
+                ex instanceof ProductNameEmptyException ||
+                ex instanceof ProductStockInvalidException
+        ) {
             status = HttpStatus.BAD_REQUEST.value();
             message = ex.getMessage();
-        } else if (ex instanceof FranchiseNotFoundException) {
+        } else if (ex instanceof FranchiseNotFoundException
+        || ex instanceof BranchNotFoundException) {
             status = HttpStatus.NOT_FOUND.value();
             message = ex.getMessage();
         } else {
