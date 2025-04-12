@@ -33,4 +33,11 @@ public class DocumentationConfig {
                 .pathsToMatch("/branch/**")
                 .build();
     }
+    @Bean
+    public GroupedOpenApi productApi() {
+        return GroupedOpenApi.builder()
+                .group("product")
+                .pathsToMatch("/product/**")
+                .build();
+    }
 }
