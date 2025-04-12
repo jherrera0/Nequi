@@ -86,4 +86,25 @@ class BranchAdapterTest {
                 .expectNext(false)
                 .verifyComplete();
     }
+    @Test
+    void existsByIdShouldReturnTrueWhenBranchExists() {
+        Integer branchId = 1;
+
+        when(branchRepository.existsById(branchId)).thenReturn(Mono.just(true));
+
+        StepVerifier.create(branchAdapter.existsById(branchId))
+                .expectNext(true)
+                .verifyComplete();
+    }
+
+    @Test
+    void existsByIdShouldReturnFalseWhenBranchDoesNotExist() {
+        Integer branchId = 1;
+
+        when(branchRepository.existsById(branchId)).thenReturn(Mono.just(false));
+
+        StepVerifier.create(branchAdapter.existsById(branchId))
+                .expectNext(false)
+                .verifyComplete();
+    }
 }
