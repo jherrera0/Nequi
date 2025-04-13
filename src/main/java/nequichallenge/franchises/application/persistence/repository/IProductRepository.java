@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface IProductRepository extends ReactiveCrudRepository<ProductEntity,Integer> {
     Mono<Boolean> existsByName(String name);
+
+    Mono<ProductEntity> findById(Integer id);
 }
