@@ -105,4 +105,37 @@ class ProductCaseTest {
                 .expectError(ProductStockInvalidException.class)
                 .verify();
     }
+    @Test
+    void deleteProductDeactivatesProductWhenProductExists() {
+        Product product = new Product();
+        product.setId(1);
+        product.setIsActive(true);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setId(1);
+        updatedProduct.setIsActive(false);
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.just(product));
+        Mockito.when(productPersistencePort.updateProduct(Mockito.any(Product.class))).thenReturn(Mono.just(updatedProduct));
+
+        StepVerifier.create(productCase.deleteProduct(product))
+                .expectNextMatches(result -> result.getId().equals(product.getId()) && !result.getIsActive())
+                .verifyComplete();
+
+        Mockito.verify(productPersistencePort).updateProduct(Mockito.argThat(arg ->
+                arg.getId().equals(product.getId()) && !arg.getIsActive()
+        ));
+    }
+
+    @Test
+    void deleteProductThrowsErrorWhenProductDoesNotExist() {
+        Product product = new Product();
+        product.setId(1);
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(productCase.deleteProduct(product))
+                .expectError(ProductNotFoundException.class)
+                .verify();
+    }
 }

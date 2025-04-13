@@ -1,6 +1,7 @@
 package nequichallenge.franchises.application.http.handler;
 
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.response.ProductDtoResponse;
 import nequichallenge.franchises.application.http.mapper.IProductDtoMapper;
 import nequichallenge.franchises.domain.api.IProductServicePort;
@@ -61,6 +62,51 @@ class ProductHandlerTest {
 
         // Act & Assert
         StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectErrorMatches(error -> error instanceof IllegalArgumentException &&
+                        error.getMessage().equals("Request body cannot be empty"))
+                .verify();
+    }
+    @Test
+    void createProductReturnsErrorWhenBranchIdIsNull() {
+        // Arrange
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("Latte", 5, null);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new IllegalArgumentException("Branch ID cannot be null"));
+
+        // Act & Assert
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectErrorMatches(error -> error instanceof IllegalArgumentException &&
+                        error.getMessage().equals("Branch ID cannot be null"))
+                .verify();
+    }
+
+    @Test
+    void deleteProductReturnsOkResponseWhenValidRequest() {
+        DeleteProductDtoRequest requestDto = new DeleteProductDtoRequest(10);
+        Product domainProduct = new Product(10, "Latte", 5);
+        ProductDtoResponse responseDto = new ProductDtoResponse(10, "Latte", 5, false);
+
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto)).thenReturn(domainProduct);
+        when(productServicePort.deleteProduct(domainProduct)).thenReturn(Mono.just(domainProduct));
+        when(productDtoMapper.toProductDto(domainProduct)).thenReturn(responseDto);
+
+        StepVerifier.create(productHandler.deleteProduct(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
+                .verifyComplete();
+    }
+
+    @Test
+    void deleteProductReturnsErrorWhenRequestBodyIsEmpty() {
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.empty());
+
+        StepVerifier.create(productHandler.deleteProduct(serverRequest))
                 .expectErrorMatches(error -> error instanceof IllegalArgumentException &&
                         error.getMessage().equals("Request body cannot be empty"))
                 .verify();

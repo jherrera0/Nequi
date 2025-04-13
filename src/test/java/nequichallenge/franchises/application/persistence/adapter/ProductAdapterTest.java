@@ -82,4 +82,92 @@ class ProductAdapterTest {
             verify(productRepository).existsByName("Product1");
         }
     }
+    @Nested
+    @DisplayName("findById")
+    class FindById {
+
+        @Test
+        @DisplayName("returns product when found by id")
+        void returnsProductWhenFoundById() {
+            ProductEntity productEntity = new ProductEntity();
+            productEntity.setId(1);
+            productEntity.setName("Product1");
+            productEntity.setStock(100);
+            productEntity.setBranchId(1);
+
+            Product product = new Product(1, "Product1", 100);
+
+            when(productRepository.findById(1)).thenReturn(Mono.just(productEntity));
+            when(productEntityMapper.toProduct(productEntity)).thenReturn(product);
+
+            StepVerifier.create(productAdapter.findById(1))
+                    .expectNext(product)
+                    .verifyComplete();
+
+            verify(productRepository).findById(1);
+            verify(productEntityMapper).toProduct(productEntity);
+        }
+
+        @Test
+        @DisplayName("returns empty when product not found by id")
+        void returnsEmptyWhenProductNotFoundById() {
+            when(productRepository.findById(1)).thenReturn(Mono.empty());
+
+            StepVerifier.create(productAdapter.findById(1))
+                    .verifyComplete();
+
+            verify(productRepository).findById(1);
+            verifyNoInteractions(productEntityMapper);
+        }
+    }
+
+    @Nested
+    @DisplayName("updateProduct")
+    class UpdateProduct {
+
+        @Test
+        @DisplayName("updates product successfully")
+        void updatesProductSuccessfully() {
+            ProductEntity productEntity = new ProductEntity();
+            productEntity.setId(1);
+            productEntity.setName("Product1");
+            productEntity.setStock(100);
+            productEntity.setBranchId(1);
+            productEntity.setIsActive(false);
+
+            Product existingProduct = new Product(1, "Product1", 100);
+            existingProduct.setIsActive(true);
+
+            Product updatedProduct = new Product(1, "Product1", 100);
+            updatedProduct.setIsActive(true);
+
+            when(productRepository.findById(1)).thenReturn(Mono.just(productEntity));
+            when(productRepository.save(productEntity)).thenReturn(Mono.just(productEntity));
+            when(productEntityMapper.toProduct(productEntity)).thenReturn(updatedProduct);
+
+            StepVerifier.create(productAdapter.updateProduct(existingProduct))
+                    .expectNext(updatedProduct)
+                    .verifyComplete();
+
+            verify(productRepository).findById(1);
+            verify(productRepository).save(productEntity);
+            verify(productEntityMapper).toProduct(productEntity);
+        }
+
+        @Test
+        @DisplayName("returns empty when product to update not found")
+        void returnsEmptyWhenProductToUpdateNotFound() {
+            Product existingProduct = new Product(1, "Product1", 100);
+            existingProduct.setIsActive(true);
+
+            when(productRepository.findById(1)).thenReturn(Mono.empty());
+
+            StepVerifier.create(productAdapter.updateProduct(existingProduct))
+                    .verifyComplete();
+
+            verify(productRepository).findById(1);
+            verifyNoMoreInteractions(productRepository);
+            verifyNoInteractions(productEntityMapper);
+        }
+    }
 }
