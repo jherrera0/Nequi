@@ -38,6 +38,16 @@ public class ProductCase implements IProductServicePort {
                 });
     }
 
+    @Override
+    public Mono<Product> deleteProduct(Product product) {
+        return productPersistencePort.findById(product.getId())
+                .flatMap(existingProduct -> {
+                    existingProduct.setIsActive(false);
+                    return productPersistencePort.updateProduct(existingProduct);
+                })
+                .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+    }
+
     private static Mono<Product> validateParams(Integer branchId, Product product) {
         if (product.getName() == null || product.getName().isEmpty()) {
             return Mono.error(new ProductNameEmptyException());

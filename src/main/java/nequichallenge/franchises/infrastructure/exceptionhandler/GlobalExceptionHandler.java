@@ -33,8 +33,10 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         ) {
             status = HttpStatus.BAD_REQUEST.value();
             message = ex.getMessage();
-        } else if (ex instanceof FranchiseNotFoundException
-        || ex instanceof BranchNotFoundException) {
+        }
+        else if (ex instanceof FranchiseNotFoundException ||
+                 ex instanceof BranchNotFoundException ||
+                 ex instanceof ProductNotFoundException) {
             status = HttpStatus.NOT_FOUND.value();
             message = ex.getMessage();
         } else {

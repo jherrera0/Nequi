@@ -14,6 +14,7 @@ public class ConstExceptions {
     public static final String PRODUCT_STOCK_INVALID = "Product stock is empty or less than zero";
     public static final String PRODUCT_NAME_EMPTY = "Product name cannot be empty";
     public static final String BRANCH_NOT_FOUND = "Branch not found";
+    public static final String PRODUCT_NOT_FOUND = "Product not found";
 
     private ConstExceptions() {}
 }
