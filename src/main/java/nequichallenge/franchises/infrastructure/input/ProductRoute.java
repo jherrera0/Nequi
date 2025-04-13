@@ -93,9 +93,99 @@ public class ProductRoute {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/product/delete",
+                    produces = {MediaType.APPLICATION_JSON_VALUE},
+                    method = RequestMethod.POST,
+                    beanClass = IProductHandler.class,
+                    beanMethod = "deleteProduct",
+                    operation = @Operation(
+                            operationId = "deleteProduct",
+                            summary = "Eliminar producto",
+                            description = "Elimina un producto existente del sistema usando su ID",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = {
+                                                    @ExampleObject(
+                                                            name = "EliminarProductoEjemplo",
+                                                            summary = "Ejemplo de solicitud para eliminar producto",
+                                                            value = """
+                                                                {
+                                                                  "id": 10
+                                                                }
+                                                                """
+                                                    )
+                                            }
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "204",
+                                            description = "Producto eliminado exitosamente",
+                                            content = @Content(
+                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    examples = @ExampleObject(
+                                                            name = "ErrorEliminacionProducto",
+                                                            summary = "Error al eliminar producto",
+                                                            value = """
+                                                                {
+                                                                    "id": 1,
+                                                                    "name": "1",
+                                                                    "stock": 10,
+                                                                    "isActive": false
+                                                                }
+                                                                """
+                                                    )
+                                            )
+
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Solicitud inválida debido a datos incorrectos",
+                                            content = @Content(
+                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    examples = @ExampleObject(
+                                                            name = "ErrorEliminacionProducto",
+                                                            summary = "Error al eliminar producto",
+                                                            value = """
+                                                                {
+                                                                  "status": 400,
+                                                                  "error": "Bad Request",
+                                                                  "message": "Product does not exist",
+                                                                  "path": "/product/delete"
+                                                                }
+                                                                """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error interno al intentar eliminar producto",
+                                            content = @Content(
+                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    examples = @ExampleObject(
+                                                            name = "ErrorInternoServidor",
+                                                            summary = "Error interno",
+                                                            value = """
+                                                                {
+                                                                  "status": 500,
+                                                                  "error": "Internal Server Error",
+                                                                  "message": "Foreign key constraint fails",
+                                                                  "path": "/product/delete"
+                                                                }
+                                                                """
+                                                    )
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> productRoutes(IProductHandler productHandler) {
-        return route(POST(ConstRoute.PRODUCT+ConstRoute.CREATE), productHandler::createProduct);
+        return route(POST(ConstRoute.PRODUCT + ConstRoute.CREATE), productHandler::createProduct)
+                .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.DELETE), productHandler::deleteProduct);
     }
 }
