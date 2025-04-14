@@ -3,6 +3,7 @@ package nequichallenge.franchises.application.http.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nequichallenge.franchises.application.http.dto.request.AddBranchDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.application.http.handler.interfaces.IBranchHandler;
 import nequichallenge.franchises.application.http.mapper.IBranchDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
@@ -25,6 +26,18 @@ public class BranchHandler implements IBranchHandler {
                         branchService.addBranch(addBranchDtoRequest.getFranchiseId(), addBranchDtoRequest.getName())
                 )
                 .map(branchDtoMapper::toBranchDto)
+                .flatMap(response -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response)
+                );
+    }
+
+    @Override
+    public Mono<ServerResponse> updateName(ServerRequest request) {
+        return request.bodyToMono(UpdateNameDtoRequest.class)
+                .map(branchDtoMapper::toDomain)
+                .flatMap(branchService::updateName)
+                .map(branchDtoMapper::toBranchCustomDto)
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response)
