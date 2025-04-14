@@ -88,6 +88,19 @@ public class ProductCase implements IProductServicePort {
         );
     }
 
+    @Override
+    public Mono<Product> updateProductName(Product product) {
+        if (product.getName() == null || product.getName().isEmpty()) {
+            return Mono.error(new ProductNameEmptyException());
+        }
+        return productPersistencePort.findById(product.getId())
+                .flatMap(existingProduct -> {
+                    existingProduct.setName(product.getName());
+                    return productPersistencePort.updateProduct(existingProduct);
+                })
+                .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+    }
+
     private static Mono<Product> validateParams(Integer branchId, Product product) {
         if (product.getName() == null || product.getName().isEmpty()) {
             return Mono.error(new ProductNameEmptyException());

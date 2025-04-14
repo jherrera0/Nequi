@@ -10,6 +10,7 @@ public class ConstRoute {
     public static final String ADD_PRODUCT_STOCK_REST_ROUTE = "/addProductStock";
     public static final String GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE
             = "/getTopStockProductsByBranchAssociatedToFranchise/{franchiseId}";
+    public static final String UPDATE_NAME = "/updateName";
 
 
     private ConstRoute() {}

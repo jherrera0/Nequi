@@ -11,4 +11,6 @@ public interface IProductServicePort {
     Mono<Product> addProductStock(Product product);
 
     Flux<ProductTopStock> getTopStockProductsByBranchAssociatedToFranchise(Integer franchiseId);
+
+    Mono<Product> updateProductName(Product product);
 }
