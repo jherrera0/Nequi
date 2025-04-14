@@ -36,6 +36,8 @@ public class ProductAdapter implements IProductPersistencePort {
     public Mono<Product> updateProduct(Product existingProduct) {
         return productRepository.findById(existingProduct.getId())
                 .flatMap(productOnDb ->{
+                    productOnDb.setName(existingProduct.getName());
+                    productOnDb.setStock(existingProduct.getStock());
                     productOnDb.setIsActive(existingProduct.getIsActive());
                     return productRepository.save(productOnDb).map(productEntityMapper::toProduct);
                 });

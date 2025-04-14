@@ -2,6 +2,7 @@ package nequichallenge.franchises.application.http.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nequichallenge.franchises.application.http.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
 import nequichallenge.franchises.application.http.handler.interfaces.IProductHandler;
@@ -36,9 +37,18 @@ public class ProductHandler implements IProductHandler {
     @Override
     public Mono<ServerResponse> deleteProduct(ServerRequest request) {
         return request.bodyToMono(DeleteProductDtoRequest.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
                 .map(productDtoMapper::toProduct)
                 .flatMap(productServicePort::deleteProduct)
+                .map(productDtoMapper::toProductDto)
+                .flatMap(dtoResponse -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
+    }
+
+    @Override
+    public Mono<ServerResponse> addProductStock(ServerRequest request) {
+        return request.bodyToMono(AddProductStockDtoRequest.class)
+                .map(productDtoMapper::toProduct)
+                .flatMap(productServicePort::addProductStock)
                 .map(productDtoMapper::toProductDto)
                 .flatMap(dtoResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
