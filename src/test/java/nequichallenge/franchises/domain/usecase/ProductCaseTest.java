@@ -236,4 +236,56 @@ class ProductCaseTest {
         StepVerifier.create(productCase.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
                 .verifyComplete();
     }
+    @Test
+    void updateProductNameUpdatesNameWhenProductExistsAndNameIsValid() {
+        Product product = new Product();
+        product.setId(1);
+        product.setName("Updated Name");
+
+        Product existingProduct = new Product();
+        existingProduct.setId(1);
+        existingProduct.setName("Old Name");
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.just(existingProduct));
+        Mockito.when(productPersistencePort.updateProduct(Mockito.any(Product.class))).thenReturn(Mono.just(product));
+
+        StepVerifier.create(productCase.updateProductName(product))
+                .expectNextMatches(updatedProduct -> updatedProduct.getName().equals("Updated Name"))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateProductNameThrowsErrorWhenProductDoesNotExist() {
+        Product product = new Product();
+        product.setId(1);
+        product.setName("Nonexistent Product");
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(productCase.updateProductName(product))
+                .expectError(ProductNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void updateProductNameThrowsErrorWhenNameIsEmpty() {
+        Product product = new Product();
+        product.setId(1);
+        product.setName("");
+
+        StepVerifier.create(productCase.updateProductName(product))
+                .expectError(ProductNameEmptyException.class)
+                .verify();
+    }
+
+    @Test
+    void updateProductNameThrowsErrorWhenNameIsNull() {
+        Product product = new Product();
+        product.setId(1);
+        product.setName(null);
+
+        StepVerifier.create(productCase.updateProductName(product))
+                .expectError(ProductNameEmptyException.class)
+                .verify();
+    }
 }
