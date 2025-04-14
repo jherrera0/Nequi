@@ -7,6 +7,7 @@ public class ConstRoute {
     public static final String CREATE = "/create";
     public static final String DELETE = "/delete";
     public static final String ADD_BRANCH_REST_ROUTE = "/addBranch";
+    public static final String ADD_PRODUCT_STOCK_REST_ROUTE = "/addProductStock";
 
 
     private ConstRoute() {}
