@@ -11,4 +11,8 @@ public interface IBranchPersistencePort {
     Mono<Boolean> existsById(Integer branchId);
 
     Flux<Branch> getBranchesByFranchiseId(Integer franchiseId);
+
+    Mono<Branch> findById(Integer id);
+
+    Mono<Branch> updateBranch(Branch existedBranch);
 }
