@@ -1,5 +1,7 @@
 package nequichallenge.franchises.application.http.mapper;
 
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
+import nequichallenge.franchises.application.http.dto.response.BranchCustomDtoResponse;
 import nequichallenge.franchises.application.http.dto.response.BranchDtoResponse;
 import nequichallenge.franchises.domain.model.Branch;
 import org.mapstruct.Mapper;
@@ -11,4 +13,6 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface IBranchDtoMapper {
     BranchDtoResponse toBranchDto(Branch branch);
+    BranchCustomDtoResponse toBranchCustomDto(Branch branch);
+    Branch toDomain(UpdateNameDtoRequest updateNameDtoRequest);
 }

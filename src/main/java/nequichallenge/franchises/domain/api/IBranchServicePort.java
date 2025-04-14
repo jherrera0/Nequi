@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface IBranchServicePort {
     Mono<Branch> addBranch(Integer franchiseId, String name);
+
+    Mono<Branch> updateName(Branch branch);
 }

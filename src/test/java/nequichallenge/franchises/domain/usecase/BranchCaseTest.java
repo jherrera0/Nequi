@@ -2,6 +2,7 @@ package nequichallenge.franchises.domain.usecase;
 
 import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
 import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
+import nequichallenge.franchises.domain.exception.BranchNotFoundException;
 import nequichallenge.franchises.domain.exception.FranchiseNotFoundException;
 import nequichallenge.franchises.domain.model.Branch;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -90,5 +92,54 @@ class BranchCaseTest {
         verify(franchisePersistencePort, never()).franchiseExistsById(any());
         verify(branchPersistencePort, never()).existsByName(any());
         verify(branchPersistencePort, never()).addBranch(any(), any());
+    }
+    @Test
+    @DisplayName("updateName should update branch name when branch exists and name is valid")
+    void updateNameUpdatesBranchNameWhenBranchExistsAndNameIsValid() {
+        Branch existingBranch = new Branch(1, "OldName", List.of());
+        Branch updatedBranch = new Branch(1, "NewName", List.of());
+
+        when(branchPersistencePort.findById(1)).thenReturn(Mono.just(existingBranch));
+        when(branchPersistencePort.updateBranch(existingBranch)).thenReturn(Mono.just(updatedBranch));
+
+        StepVerifier.create(branchCase.updateName(updatedBranch))
+                .expectNextMatches(branch -> branch.getName().equals("NewName"))
+                .verifyComplete();
+
+        verify(branchPersistencePort).findById(1);
+        verify(branchPersistencePort).updateBranch(existingBranch);
+    }
+
+    @Test
+    @DisplayName("updateName should throw BranchNameEmptyException when name is null or empty")
+    void updateNameThrowsBranchNameEmptyExceptionWhenNameIsNullOrEmpty() {
+        Branch branchWithNullName = new Branch(1, null, List.of());
+        Branch branchWithEmptyName = new Branch(1, "", List.of());
+
+        StepVerifier.create(branchCase.updateName(branchWithNullName))
+                .expectError(BranchNameEmptyException.class)
+                .verify();
+
+        StepVerifier.create(branchCase.updateName(branchWithEmptyName))
+                .expectError(BranchNameEmptyException.class)
+                .verify();
+
+        verify(branchPersistencePort, never()).findById(any());
+        verify(branchPersistencePort, never()).updateBranch(any());
+    }
+
+    @Test
+    @DisplayName("updateName should throw BranchNotFoundException when branch does not exist")
+    void updateNameThrowsBranchNotFoundExceptionWhenBranchDoesNotExist() {
+        Branch nonExistentBranch = new Branch(1, "NewName", List.of());
+
+        when(branchPersistencePort.findById(1)).thenReturn(Mono.empty());
+
+        StepVerifier.create(branchCase.updateName(nonExistentBranch))
+                .expectError(BranchNotFoundException.class)
+                .verify();
+
+        verify(branchPersistencePort).findById(1);
+        verify(branchPersistencePort, never()).updateBranch(any());
     }
 }

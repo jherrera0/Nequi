@@ -142,4 +142,44 @@ class BranchAdapterTest {
         StepVerifier.create(branchAdapter.getBranchesByFranchiseId(franchiseId))
                 .verifyComplete();
     }
+    @Test
+    void findByIdShouldReturnBranchWhenBranchExists() {
+        Integer branchId = 1;
+        BranchEntity entity = new BranchEntity(branchId, "Branch Name", 1);
+        Branch branch = new Branch(branchId, "Branch Name", List.of());
+
+        when(branchRepository.findById(branchId)).thenReturn(Mono.just(entity));
+        when(branchEntityMapper.toModel(entity)).thenReturn(branch);
+
+        StepVerifier.create(branchAdapter.findById(branchId))
+                .expectNext(branch)
+                .verifyComplete();
+    }
+
+    @Test
+    void findByIdShouldReturnEmptyWhenBranchDoesNotExist() {
+        Integer branchId = 1;
+
+        when(branchRepository.findById(branchId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(branchAdapter.findById(branchId))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateBranchShouldReturnUpdatedBranchWhenUpdateIsSuccessful() {
+        BranchEntity existingEntity = new BranchEntity(1, "Old Name", 1);
+        BranchEntity updatedEntity = new BranchEntity(1, "New Name", 1);
+        Branch updatedBranch = new Branch(1, "New Name", List.of());
+        Branch branchToUpdate = new Branch(1, "New Name", List.of());
+
+        when(branchRepository.findById(1)).thenReturn(Mono.just(existingEntity));
+        when(branchRepository.save(existingEntity)).thenReturn(Mono.just(updatedEntity));
+        when(branchEntityMapper.toModel(updatedEntity)).thenReturn(updatedBranch);
+
+        StepVerifier.create(branchAdapter.updateBranch(branchToUpdate))
+                .expectNext(updatedBranch)
+                .verifyComplete();
+    }
+
 }

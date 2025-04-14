@@ -38,4 +38,19 @@ public class BranchAdapter implements IBranchPersistencePort {
     public Flux<Branch> getBranchesByFranchiseId(Integer franchiseId) {
         return branchRepository.findAllByFranchiseId((franchiseId)).map(branchEntityMapper::toModel);
     }
+
+    @Override
+    public Mono<Branch> findById(Integer id) {
+        return branchRepository.findById(id).map(branchEntityMapper::toModel);
+    }
+
+    @Override
+    public Mono<Branch> updateBranch(Branch existedBranch) {
+        return branchRepository.findById(existedBranch.getId())
+                .flatMap(entity -> {
+                    entity.setName(existedBranch.getName());
+                    return branchRepository.save(entity);
+                })
+                .map(branchEntityMapper::toModel);
+    }
 }

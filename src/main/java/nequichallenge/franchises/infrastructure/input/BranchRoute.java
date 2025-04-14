@@ -42,11 +42,11 @@ public class BranchRoute {
                                                             name = "Sucursal Ejemplo",
                                                             summary = "Ejemplo de sucursal",
                                                             value = """
-                                                                {
-                                                                  "franchiseId": 1,
-                                                                  "name": "Sucursal Cartagena"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "franchiseId": 1,
+                                                                      "name": "Sucursal Cartagena"
+                                                                    }
+                                                                    """
                                                     )
                                             }
                                     )
@@ -61,11 +61,11 @@ public class BranchRoute {
                                                             name = "Sucursal Creada",
                                                             summary = "Respuesta exitosa",
                                                             value = """
-                                                                {
-                                                                  "franchiseId": 1,
-                                                                  "name": "Sucursal Cartagena"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "franchiseId": 1,
+                                                                      "name": "Sucursal Cartagena"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     ),
@@ -75,11 +75,69 @@ public class BranchRoute {
                                     )
                             }
                     )
+            ), @RouterOperation(
+            path = "/branch/updateName",
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.POST,
+            beanClass = IBranchHandler.class,
+            beanMethod = "updateName",
+            operation = @Operation(
+                    operationId = "updateBranchName",
+                    summary = "Actualizar el nombre de una sucursal",
+                    description = "Actualiza el nombre de una sucursal existente mediante su ID",
+                    requestBody = @RequestBody(
+                            required = true,
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    examples = {
+                                            @ExampleObject(
+                                                    name = "Actualizar Nombre",
+                                                    summary = "Ejemplo de actualización de nombre de sucursal",
+                                                    value = """
+                                                            {
+                                                              "id": 1,
+                                                              "name": "Sucursal Bocagrande"
+                                                            }
+                                                            """
+                                            )
+                                    }
+                            )
+                    ),
+                    responses = {
+                            @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Nombre de sucursal actualizado exitosamente",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "Sucursal Actualizada",
+                                                    summary = "Respuesta exitosa",
+                                                    value = """
+                                                            {
+                                                              "id": 1,
+                                                              "name": "Sucursal Bocagrande"
+                                                            }
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "404",
+                                    description = "Sucursal no encontrada"
+                            ),
+                            @ApiResponse(
+                                    responseCode = "400",
+                                    description = "Datos inválidos"
+                            )
+                    }
             )
+    )
     })
 
     public RouterFunction<ServerResponse> branchRoutes(IBranchHandler branchHandler) {
         return route(POST(ConstRoute.BRANCH_REST_ROUTE + ConstRoute.ADD_BRANCH_REST_ROUTE),
-                branchHandler::addBranch);
+                branchHandler::addBranch)
+                .andRoute(POST(ConstRoute.BRANCH_REST_ROUTE + ConstRoute.UPDATE_NAME),
+                        branchHandler::updateName);
     }
 }

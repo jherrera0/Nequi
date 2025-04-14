@@ -3,6 +3,7 @@ package nequichallenge.franchises.domain.usecase;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
 import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
 import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
+import nequichallenge.franchises.domain.exception.BranchNotFoundException;
 import nequichallenge.franchises.domain.exception.FranchiseNotFoundException;
 import nequichallenge.franchises.domain.model.Branch;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
@@ -38,6 +39,19 @@ public class BranchCase implements IBranchServicePort {
                                     });
                         }
                 );
+    }
+
+    @Override
+    public Mono<Branch> updateName(Branch branch) {
+        if (branch.getName() == null || branch.getName().isEmpty()) {
+            return Mono.error(new BranchNameEmptyException());
+        }
+        return branchPersistencePort.findById(branch.getId())
+                .flatMap(existedBranch ->{
+                    existedBranch.setName(branch.getName());
+                    return branchPersistencePort.updateBranch(existedBranch);
+                })
+                .switchIfEmpty(Mono.error(new BranchNotFoundException()));
     }
 
     private static Mono<Branch> validateParams(String name) {
