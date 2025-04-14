@@ -182,10 +182,80 @@ public class ProductRoute {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/product/add-product-stock",
+                    produces = {MediaType.APPLICATION_JSON_VALUE},
+                    method = RequestMethod.POST,
+                    beanClass = IProductHandler.class,
+                    beanMethod = "addProductStock",
+                    operation = @Operation(
+                            operationId = "addProductStock",
+                            summary = "Aumentar stock de un producto",
+                            description = "Agrega una cantidad específica al stock de un producto existente",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "AgregarStockEjemplo",
+                                                    summary = "Ejemplo para agregar stock",
+                                                    value = """
+                                                        {
+                                                          "id": 10,
+                                                          "quantity": 5
+                                                        }
+                                                        """
+                                            )
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Stock actualizado exitosamente",
+                                            content = @Content(
+                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    examples = @ExampleObject(
+                                                            name = "StockActualizado",
+                                                            summary = "Respuesta exitosa",
+                                                            value = """
+                                                                {
+                                                                  "id": 10,
+                                                                  "name": "Latte",
+                                                                  "stock": 15,
+                                                                  "isActive": true
+                                                                }
+                                                                """
+                                                    )
+                                            )
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Solicitud inválida por datos incorrectos o inexistencia del producto",
+                                            content = @Content(
+                                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                                    examples = @ExampleObject(
+                                                            name = "ErrorStock",
+                                                            summary = "Error al actualizar stock",
+                                                            value = """
+                                                                {
+                                                                  "status": 400,
+                                                                  "error": "Bad Request",
+                                                                  "message": "Product does not exist or invalid quantity",
+                                                                  "path": "/product/add-product-stock"
+                                                                }
+                                                                """
+                                                    )
+                                            )
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> productRoutes(IProductHandler productHandler) {
         return route(POST(ConstRoute.PRODUCT + ConstRoute.CREATE), productHandler::createProduct)
-                .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.DELETE), productHandler::deleteProduct);
+                .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.DELETE), productHandler::deleteProduct)
+                .andRoute(POST(ConstRoute.PRODUCT+ConstRoute.ADD_PRODUCT_STOCK_REST_ROUTE),
+                        productHandler::addProductStock);
     }
 }

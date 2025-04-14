@@ -1,5 +1,6 @@
 package nequichallenge.franchises.application.http.mapper;
 
+import nequichallenge.franchises.application.http.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.response.ProductDtoResponse;
@@ -13,5 +14,6 @@ import org.mapstruct.ReportingPolicy;
 public interface IProductDtoMapper {
     ProductDtoResponse toProductDto(Product product);
     Product toProduct(DeleteProductDtoRequest dtoRequest);
+    Product toProduct(AddProductStockDtoRequest dtoRequest);
     Product toProduct(CreateProductDtoRequest createProductDtoRequest);
 }
