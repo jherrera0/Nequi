@@ -42,4 +42,10 @@ public class ProductAdapter implements IProductPersistencePort {
                     return productRepository.save(productOnDb).map(productEntityMapper::toProduct);
                 });
     }
+
+    @Override
+    public Mono<Product> getTopStockProductsByBranchId(Integer id) {
+        return productRepository.findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(id, true)
+                .map(productEntityMapper::toProduct);
+    }
 }

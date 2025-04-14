@@ -8,4 +8,5 @@ public interface IProductRepository extends ReactiveCrudRepository<ProductEntity
     Mono<Boolean> existsByName(String name);
 
     Mono<ProductEntity> findById(Integer id);
+    Mono<ProductEntity> findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(Integer branchId, Boolean isActive);
 }

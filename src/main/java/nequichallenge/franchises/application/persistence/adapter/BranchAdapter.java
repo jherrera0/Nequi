@@ -6,6 +6,7 @@ import nequichallenge.franchises.application.persistence.mapper.IBranchEntityMap
 import nequichallenge.franchises.application.persistence.repository.IBranchRepository;
 import nequichallenge.franchises.domain.model.Branch;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -31,5 +32,10 @@ public class BranchAdapter implements IBranchPersistencePort {
     @Override
     public Mono<Boolean> existsById(Integer branchId) {
         return branchRepository.existsById(branchId);
+    }
+
+    @Override
+    public Flux<Branch> getBranchesByFranchiseId(Integer franchiseId) {
+        return branchRepository.findAllByFranchiseId((franchiseId)).map(branchEntityMapper::toModel);
     }
 }

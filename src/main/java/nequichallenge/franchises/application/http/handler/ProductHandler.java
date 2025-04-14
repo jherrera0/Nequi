@@ -53,4 +53,14 @@ public class ProductHandler implements IProductHandler {
                 .flatMap(dtoResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
     }
+
+    @Override
+    public Mono<ServerResponse> getTopStockProductsByBranchAssociatedToFranchise(ServerRequest request) {
+        Integer franchiseId = Integer.valueOf(request.pathVariable("franchiseId"));
+        return productServicePort.getTopStockProductsByBranchAssociatedToFranchise(franchiseId)
+                .map(productDtoMapper::toProductTopStockDto)
+                .collectList()
+                .flatMap(products -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(products));
+    }
 }
