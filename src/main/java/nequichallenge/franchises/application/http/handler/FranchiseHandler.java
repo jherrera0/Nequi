@@ -3,6 +3,7 @@ package nequichallenge.franchises.application.http.handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nequichallenge.franchises.application.http.dto.request.CreateFranchiseDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.application.http.handler.interfaces.IFranchiseHandler;
 import nequichallenge.franchises.application.http.mapper.IFranchiseDtoMapper;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
@@ -29,5 +30,15 @@ public class FranchiseHandler implements IFranchiseHandler {
                 .flatMap(franchiseDtoResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON).bodyValue(franchiseDtoResponse));
 
+    }
+
+    @Override
+    public Mono<ServerResponse> updateFranchise(ServerRequest request) {
+        return request.bodyToMono(UpdateNameDtoRequest.class)
+                .map(franchiseDtoMapper::toDomain)
+                .flatMap(franchiseServicePort::updateName)
+                .map(franchiseDtoMapper::toCustomDtoResponse)
+                .flatMap(franchiseDtoResponse -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(franchiseDtoResponse));
     }
 }

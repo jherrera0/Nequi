@@ -15,6 +15,7 @@ public class ConstExceptions {
     public static final String PRODUCT_NAME_EMPTY = "Product name cannot be empty";
     public static final String BRANCH_NOT_FOUND = "Branch not found";
     public static final String PRODUCT_NOT_FOUND = "Product not found";
+    public static final String FRANCHISE_NAME_ALREADY_EXIST = "Franchise name already exists";
 
     private ConstExceptions() {}
 }
