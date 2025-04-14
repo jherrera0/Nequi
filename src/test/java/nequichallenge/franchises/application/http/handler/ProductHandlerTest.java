@@ -3,6 +3,7 @@ package nequichallenge.franchises.application.http.handler;
 import nequichallenge.franchises.application.http.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.application.http.dto.response.ProductDtoResponse;
 import nequichallenge.franchises.application.http.dto.response.ProductTopStockDtoResponse;
 import nequichallenge.franchises.application.http.mapper.IProductDtoMapper;
@@ -147,4 +148,23 @@ class ProductHandlerTest {
                 .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
                 .verifyComplete();
     }
+    @Test
+    void updateProductNameReturnsOkResponseWhenValidRequest() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(10, "Cappuccino");
+        Product domainProduct = new Product(10, "Latte", 5);
+        Product updatedProduct = new Product(10, "Cappuccino", 5);
+        ProductDtoResponse responseDto = new ProductDtoResponse(10, "Cappuccino", 5, true);
+
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto)).thenReturn(domainProduct);
+        when(productServicePort.updateProductName(domainProduct)).thenReturn(Mono.just(updatedProduct));
+        when(productDtoMapper.toProductDto(updatedProduct)).thenReturn(responseDto);
+
+        StepVerifier.create(productHandler.updateProductName(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
+                .verifyComplete();
+    }
+
 }

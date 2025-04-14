@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import nequichallenge.franchises.application.http.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.application.http.handler.interfaces.IProductHandler;
 import nequichallenge.franchises.application.http.mapper.IProductDtoMapper;
 import nequichallenge.franchises.domain.api.IProductServicePort;
@@ -62,5 +63,15 @@ public class ProductHandler implements IProductHandler {
                 .collectList()
                 .flatMap(products -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON).bodyValue(products));
+    }
+
+    @Override
+    public Mono<ServerResponse> updateProductName(ServerRequest request) {
+        return request.bodyToMono(UpdateNameDtoRequest.class)
+                .map(productDtoMapper::toProduct)
+                .flatMap(productServicePort::updateProductName)
+                .map(productDtoMapper::toProductDto)
+                .flatMap(dtoResponse -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
     }
 }

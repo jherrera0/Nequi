@@ -263,9 +263,8 @@ public class ProductRoute {
                     operationId = "getTopStockProductsByBranchAssociatedToFranchise",
                     summary = "Obtener productos con más stock por sucursal",
                     description = """
-                            Retorna una lista de los productos con mayor cantidad de stock por cada sucursal asociada 
-                            a una franquicia específica. 
-                            """,
+                            Retorna una lista de los productos con mayor cantidad de stock por cada sucursal asociada
+                            a una franquicia específica.""",
                     parameters = {
                             @Parameter(
                                     name = "franchiseId",
@@ -354,6 +353,7 @@ public class ProductRoute {
                 .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.ADD_PRODUCT_STOCK_REST_ROUTE),
                         productHandler::addProductStock)
                 .andRoute(GET(ConstRoute.PRODUCT + ConstRoute.GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE),
-                        productHandler::getTopStockProductsByBranchAssociatedToFranchise);
+                        productHandler::getTopStockProductsByBranchAssociatedToFranchise)
+                .andRoute(POST(ConstRoute.PRODUCT+ConstRoute.UPDATE_NAME), productHandler::updateProductName);
     }
 }
