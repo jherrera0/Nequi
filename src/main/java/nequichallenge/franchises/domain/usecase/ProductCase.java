@@ -3,19 +3,25 @@ package nequichallenge.franchises.domain.usecase;
 import nequichallenge.franchises.domain.api.IProductServicePort;
 import nequichallenge.franchises.domain.exception.*;
 import nequichallenge.franchises.domain.model.Product;
+import nequichallenge.franchises.domain.model.ProductTopStock;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
+import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
 import nequichallenge.franchises.domain.spi.IProductPersistencePort;
 import nequichallenge.franchises.domain.util.ConstValidations;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ProductCase implements IProductServicePort {
     private final IProductPersistencePort productPersistencePort;
     private final IBranchPersistencePort branchPersistencePort;
+    private final IFranchisePersistencePort franchisePersistencePort;
 
     public ProductCase(IProductPersistencePort productPersistencePort,
-                       IBranchPersistencePort branchPersistencePort) {
+                       IBranchPersistencePort branchPersistencePort,
+                       IFranchisePersistencePort franchisePersistencePort) {
         this.productPersistencePort = productPersistencePort;
         this.branchPersistencePort = branchPersistencePort;
+        this.franchisePersistencePort = franchisePersistencePort;
     }
 
     @Override
@@ -59,6 +65,27 @@ public class ProductCase implements IProductServicePort {
                     return productPersistencePort.updateProduct(existingProduct);
                 })
                 .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+    }
+
+    @Override
+    public Flux<ProductTopStock> getTopStockProductsByBranchAssociatedToFranchise(Integer franchiseId) {
+        return franchisePersistencePort.franchiseExistsById(franchiseId).flatMapMany(
+                exists -> {
+                    if (exists.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
+                        return branchPersistencePort.getBranchesByFranchiseId(franchiseId)
+                                .flatMap(branch -> productPersistencePort.getTopStockProductsByBranchId(branch.getId())
+                                        .map(product -> new ProductTopStock(
+                                                branch.getId(),
+                                                branch.getName(),
+                                                product.getId(),
+                                                product.getName(),
+                                                product.getStock()
+                                        ))
+                                );
+                    }
+                    return Flux.error(new FranchiseNotFoundException());
+                }
+        );
     }
 
     private static Mono<Product> validateParams(Integer branchId, Product product) {

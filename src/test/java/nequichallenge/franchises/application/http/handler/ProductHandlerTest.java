@@ -4,9 +4,11 @@ import nequichallenge.franchises.application.http.dto.request.AddProductStockDto
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.response.ProductDtoResponse;
+import nequichallenge.franchises.application.http.dto.response.ProductTopStockDtoResponse;
 import nequichallenge.franchises.application.http.mapper.IProductDtoMapper;
 import nequichallenge.franchises.domain.api.IProductServicePort;
 import nequichallenge.franchises.domain.model.Product;
+import nequichallenge.franchises.domain.model.ProductTopStock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,8 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.reactive.function.server.MockServerRequest;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -117,6 +122,28 @@ class ProductHandlerTest {
         when(productDtoMapper.toProductDto(updatedProduct)).thenReturn(responseDto);
 
         StepVerifier.create(productHandler.addProductStock(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
+                .verifyComplete();
+    }
+    @Test
+    void getTopStockProductsByBranchAssociatedToFranchiseReturnsOkResponseWhenValidFranchiseId() {
+        Integer franchiseId = 1;
+        List<ProductTopStock> domainProducts = List.of(
+                new ProductTopStock(1,"1",1, "Latte", 10),
+                new ProductTopStock(1,"1", 2, "Espresso", 8)
+        );
+        List<ProductTopStockDtoResponse> responseDtos = List.of(
+                new ProductTopStockDtoResponse(1,"1",1, "Latte", 10),
+                new ProductTopStockDtoResponse(1,"1",2, "Espresso", 8)
+        );
+
+        when(productServicePort.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
+                .thenReturn(Flux.fromIterable(domainProducts));
+        when(productDtoMapper.toProductTopStockDto(domainProducts.get(0))).thenReturn(responseDtos.get(0));
+        when(productDtoMapper.toProductTopStockDto(domainProducts.get(1))).thenReturn(responseDtos.get(1));
+
+        StepVerifier.create(productHandler.getTopStockProductsByBranchAssociatedToFranchise(
+                        MockServerRequest.builder().pathVariable("franchiseId", "1").build()))
                 .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
                 .verifyComplete();
     }

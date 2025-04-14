@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -256,6 +257,8 @@ public class ProductRoute {
         return route(POST(ConstRoute.PRODUCT + ConstRoute.CREATE), productHandler::createProduct)
                 .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.DELETE), productHandler::deleteProduct)
                 .andRoute(POST(ConstRoute.PRODUCT+ConstRoute.ADD_PRODUCT_STOCK_REST_ROUTE),
-                        productHandler::addProductStock);
+                        productHandler::addProductStock)
+                .andRoute(GET(ConstRoute.PRODUCT+ConstRoute.GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE),
+                        productHandler::getTopStockProductsByBranchAssociatedToFranchise);
     }
 }

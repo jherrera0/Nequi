@@ -170,4 +170,45 @@ class ProductAdapterTest {
             verifyNoInteractions(productEntityMapper);
         }
     }
+    @Nested
+    @DisplayName("getTopStockProductsByBranchId")
+    class GetTopStockProductsByBranchId {
+
+        @Test
+        @DisplayName("returns product with highest stock for a given branch id")
+        void returnsProductWithHighestStockForGivenBranchId() {
+            ProductEntity productEntity = new ProductEntity();
+            productEntity.setId(1);
+            productEntity.setName("Product1");
+            productEntity.setStock(200);
+            productEntity.setBranchId(1);
+            productEntity.setIsActive(true);
+
+            Product product = new Product(1, "Product1", 200);
+
+            when(productRepository.findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(1, true))
+                    .thenReturn(Mono.just(productEntity));
+            when(productEntityMapper.toProduct(productEntity)).thenReturn(product);
+
+            StepVerifier.create(productAdapter.getTopStockProductsByBranchId(1))
+                    .expectNext(product)
+                    .verifyComplete();
+
+            verify(productRepository).findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(1, true);
+            verify(productEntityMapper).toProduct(productEntity);
+        }
+
+        @Test
+        @DisplayName("returns empty when no active products exist for a given branch id")
+        void returnsEmptyWhenNoActiveProductsExistForGivenBranchId() {
+            when(productRepository.findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(1, true))
+                    .thenReturn(Mono.empty());
+
+            StepVerifier.create(productAdapter.getTopStockProductsByBranchId(1))
+                    .verifyComplete();
+
+            verify(productRepository).findFirstByBranchIdAndIsActiveTrueOrderByStockDesc(1, true);
+            verifyNoInteractions(productEntityMapper);
+        }
+    }
 }
