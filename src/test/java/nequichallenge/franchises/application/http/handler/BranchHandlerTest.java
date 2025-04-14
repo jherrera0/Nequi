@@ -1,5 +1,7 @@
 package nequichallenge.franchises.application.http.handler;
 import nequichallenge.franchises.application.http.dto.request.AddBranchDtoRequest;
+import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
+import nequichallenge.franchises.application.http.dto.response.BranchCustomDtoResponse;
 import nequichallenge.franchises.application.http.dto.response.BranchDtoResponse;
 import nequichallenge.franchises.application.http.mapper.IBranchDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
@@ -56,4 +58,24 @@ class BranchHandlerTest {
                         throwable.getMessage().equals("Invalid body"))
                 .verify();
     }
+    @Test
+    void updateNameReturnsOkResponseWhenValidRequest() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(1, "Updated Branch Name");
+        Branch domainBranch = new Branch(1, "Old Branch Name",List.of());
+        Branch updatedBranch = new Branch(1, "Updated Branch Name",List.of());
+        BranchCustomDtoResponse responseDto = new BranchCustomDtoResponse(1, "Updated Branch Name");
+
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchDtoMapper.toDomain(requestDto)).thenReturn(domainBranch);
+        when(branchService.updateName(domainBranch)).thenReturn(Mono.just(updatedBranch));
+        when(branchDtoMapper.toBranchCustomDto(updatedBranch)).thenReturn(responseDto);
+
+        StepVerifier.create(branchHandler.updateName(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
+                .verifyComplete();
+    }
+
+
 }
