@@ -1,8 +1,11 @@
 package nequichallenge.franchises.domain.usecase;
 
 import nequichallenge.franchises.domain.exception.*;
+import nequichallenge.franchises.domain.model.Branch;
 import nequichallenge.franchises.domain.model.Product;
+import nequichallenge.franchises.domain.model.ProductTopStock;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
+import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
 import nequichallenge.franchises.domain.spi.IProductPersistencePort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,8 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCaseTest {
@@ -21,6 +27,9 @@ class ProductCaseTest {
 
     @Mock
     private IBranchPersistencePort branchPersistencePort;
+
+    @Mock
+    private IFranchisePersistencePort franchisePersistencePort;
 
     @InjectMocks
     private ProductCase productCase;
@@ -182,5 +191,49 @@ class ProductCaseTest {
         StepVerifier.create(productCase.addProductStock(product))
                 .expectError(ProductNotFoundException.class)
                 .verify();
+    }
+
+    @Test
+    void getTopStockProductsByBranchAssociatedToFranchiseReturnsProductsWhenFranchiseExists() {
+        Integer franchiseId = 1;
+        Branch branch = new Branch(1, "Branch 1", List.of());
+        Product product = new Product(1, "Product 1", 50);
+        ProductTopStock productTopStock = new ProductTopStock(1, "Branch 1", 1, "Product 1", 50);
+
+        Mockito.when(franchisePersistencePort.franchiseExistsById(franchiseId)).thenReturn(Mono.just(true));
+        Mockito.when(branchPersistencePort.getBranchesByFranchiseId(franchiseId)).thenReturn(Flux.just(branch));
+        Mockito.when(productPersistencePort.getTopStockProductsByBranchId(branch.getId())).thenReturn(Mono.just(product));
+
+        StepVerifier.create(productCase.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
+                .expectNextMatches(actual ->
+                        actual.getBranchId().equals(productTopStock.getBranchId()) &&
+                                actual.getBranchName().equals(productTopStock.getBranchName()) &&
+                                actual.getProductId().equals(productTopStock.getProductId()) &&
+                                actual.getProductName().equals(productTopStock.getProductName()) &&
+                                actual.getStock() == productTopStock.getStock()
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    void getTopStockProductsByBranchAssociatedToFranchiseThrowsErrorWhenFranchiseDoesNotExist() {
+        Integer franchiseId = 1;
+
+        Mockito.when(franchisePersistencePort.franchiseExistsById(franchiseId)).thenReturn(Mono.just(false));
+
+        StepVerifier.create(productCase.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
+                .expectError(FranchiseNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void getTopStockProductsByBranchAssociatedToFranchiseReturnsEmptyWhenNoBranchesExist() {
+        Integer franchiseId = 1;
+
+        Mockito.when(franchisePersistencePort.franchiseExistsById(franchiseId)).thenReturn(Mono.just(true));
+        Mockito.when(branchPersistencePort.getBranchesByFranchiseId(franchiseId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(productCase.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
+                .verifyComplete();
     }
 }

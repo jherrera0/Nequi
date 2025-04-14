@@ -9,8 +9,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
+
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -105,6 +109,37 @@ class BranchAdapterTest {
 
         StepVerifier.create(branchAdapter.existsById(branchId))
                 .expectNext(false)
+                .verifyComplete();
+    }
+    @Test
+    void getBranchesByFranchiseIdShouldReturnBranchesWhenFranchiseIdIsValid() {
+        Integer franchiseId = 1;
+        List<BranchEntity> entities = List.of(
+                new BranchEntity(1, "Branch 1", franchiseId),
+                new BranchEntity(2, "Branch 2", franchiseId)
+        );
+        List<Branch> branches = List.of(
+                new Branch(1, "Branch 1",List.of()),
+                new Branch(2, "Branch 2",List.of())
+        );
+
+        when(branchRepository.findAllByFranchiseId(franchiseId)).thenReturn(Flux.fromIterable(entities));
+        when(branchEntityMapper.toModel(entities.get(0))).thenReturn(branches.get(0));
+        when(branchEntityMapper.toModel(entities.get(1))).thenReturn(branches.get(1));
+
+        StepVerifier.create(branchAdapter.getBranchesByFranchiseId(franchiseId))
+                .expectNext(branches.get(0))
+                .expectNext(branches.get(1))
+                .verifyComplete();
+    }
+
+    @Test
+    void getBranchesByFranchiseIdShouldReturnEmptyWhenNoBranchesExist() {
+        Integer franchiseId = 1;
+
+        when(branchRepository.findAllByFranchiseId(franchiseId)).thenReturn(Flux.empty());
+
+        StepVerifier.create(branchAdapter.getBranchesByFranchiseId(franchiseId))
                 .verifyComplete();
     }
 }
