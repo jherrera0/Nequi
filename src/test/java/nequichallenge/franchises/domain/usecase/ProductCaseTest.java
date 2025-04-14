@@ -138,4 +138,49 @@ class ProductCaseTest {
                 .expectError(ProductNotFoundException.class)
                 .verify();
     }
+
+    @Test
+    void addProductStockUpdatesStockWhenProductExistsAndStockIsValid() {
+        Product product = new Product();
+        product.setId(1);
+        product.setStock(20);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setId(1);
+        updatedProduct.setStock(20);
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.just(new Product()));
+        Mockito.when(productPersistencePort.updateProduct(Mockito.any(Product.class))).thenReturn(Mono.just(updatedProduct));
+
+        StepVerifier.create(productCase.addProductStock(product))
+                .expectNextMatches(result -> result.getStock().equals(20))
+                .verifyComplete();
+    }
+
+    @Test
+    void addProductStockThrowsErrorWhenStockIsInvalid() {
+        Product product = new Product(1, "Test Product", 10);
+        product.setIsActive(true);
+        product.setId(1);
+        product.setStock(0);
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.just(product));
+
+        StepVerifier.create(productCase.addProductStock(product))
+                .expectError(ProductStockInvalidException.class)
+                .verify();
+    }
+
+    @Test
+    void addProductStockThrowsErrorWhenProductDoesNotExist() {
+        Product product = new Product();
+        product.setId(1);
+        product.setStock(10);
+
+        Mockito.when(productPersistencePort.findById(product.getId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(productCase.addProductStock(product))
+                .expectError(ProductNotFoundException.class)
+                .verify();
+    }
 }

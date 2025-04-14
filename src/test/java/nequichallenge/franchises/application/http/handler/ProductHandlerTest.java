@@ -1,5 +1,6 @@
 package nequichallenge.franchises.application.http.handler;
 
+import nequichallenge.franchises.application.http.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.request.DeleteProductDtoRequest;
 import nequichallenge.franchises.application.http.dto.response.ProductDtoResponse;
@@ -102,13 +103,21 @@ class ProductHandlerTest {
     }
 
     @Test
-    void deleteProductReturnsErrorWhenRequestBodyIsEmpty() {
-        ServerRequest serverRequest = MockServerRequest.builder()
-                .body(Mono.empty());
+    void addProductStockReturnsOkResponseWhenValidRequest() {
+        AddProductStockDtoRequest requestDto = new AddProductStockDtoRequest(10, 5);
+        Product domainProduct = new Product(10, "Latte", 10);
+        Product updatedProduct = new Product(10, "Latte", 5);
+        ProductDtoResponse responseDto = new ProductDtoResponse(10, "Latte", 5, true);
 
-        StepVerifier.create(productHandler.deleteProduct(serverRequest))
-                .expectErrorMatches(error -> error instanceof IllegalArgumentException &&
-                        error.getMessage().equals("Request body cannot be empty"))
-                .verify();
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto)).thenReturn(domainProduct);
+        when(productServicePort.addProductStock(domainProduct)).thenReturn(Mono.just(updatedProduct));
+        when(productDtoMapper.toProductDto(updatedProduct)).thenReturn(responseDto);
+
+        StepVerifier.create(productHandler.addProductStock(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().is2xxSuccessful())
+                .verifyComplete();
     }
 }
