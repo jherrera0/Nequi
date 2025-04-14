@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 
@@ -42,10 +43,10 @@ public class FranchiseRoute {
                                                             name = "FranquiciaEjemplo",
                                                             summary = "Ejemplo de franquicia",
                                                             value = """
-                                                                {
-                                                                  "name": "Franquicia Caribe"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "name": "Franquicia Caribe"
+                                                                    }
+                                                                    """
                                                     )
                                             }
                                     )
@@ -60,10 +61,10 @@ public class FranchiseRoute {
                                                             name = "FranquiciaCreada",
                                                             summary = "Respuesta exitosa",
                                                             value = """
-                                                                {
-                                                                  "name": "Franquicia Caribe"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "name": "Franquicia Caribe"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     ),
@@ -76,24 +77,82 @@ public class FranchiseRoute {
                                                             name = "ErrorSolicitudInvalida",
                                                             summary = "Error en la solicitud",
                                                             value = """
-                                                                    {
-                                                                      "status": 400,
-                                                                      "error": "Bad Request",
-                                                                      "message": "Franchise already exists",
-                                                                      "path": "/franchise/create"
-                                                                    }
-                                                                """
+                                                                        {
+                                                                          "status": 400,
+                                                                          "error": "Bad Request",
+                                                                          "message": "Franchise already exists",
+                                                                          "path": "/franchise/create"
+                                                                        }
+                                                                    """
                                                     )
                                             )
                                     )
                             }
                     )
+            ), @RouterOperation(
+            path = "/franchise/updateName",
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.POST,
+            beanClass = IFranchiseHandler.class,
+            beanMethod = "updateFranchise",
+            operation = @Operation(
+                    operationId = "updateFranchiseName",
+                    summary = "Actualizar el nombre de una franquicia",
+                    description = "Actualiza el nombre de una franquicia existente mediante su ID",
+                    requestBody = @RequestBody(
+                            required = true,
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    examples = {
+                                            @ExampleObject(
+                                                    name = "ActualizarFranquicia",
+                                                    summary = "Ejemplo de actualización de franquicia",
+                                                    value = """
+                                                            {
+                                                              "id": 1,
+                                                              "name": "Franquicia Andina"
+                                                            }
+                                                            """
+                                            )
+                                    }
+                            )
+                    ),
+                    responses = {
+                            @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Nombre de franquicia actualizado exitosamente",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "FranquiciaActualizada",
+                                                    summary = "Respuesta exitosa",
+                                                    value = """
+                                                            {
+                                                              "id": 1,
+                                                              "name": "Franquicia Andina"
+                                                            }
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "404",
+                                    description = "Franquicia no encontrada"
+                            ),
+                            @ApiResponse(
+                                    responseCode = "400",
+                                    description = "Datos inválidos"
+                            )
+                    }
             )
+    )
     })
 
 
     public RouterFunction<ServerResponse> franchiseRoutes(IFranchiseHandler franchiseHandler) {
-        return route(POST(ConstRoute.FRANCHISE+ConstRoute.CREATE),
-                franchiseHandler::createFranchise);
+        return route(POST(ConstRoute.FRANCHISE + ConstRoute.CREATE),
+                franchiseHandler::createFranchise)
+                .andRoute(POST(ConstRoute.FRANCHISE + ConstRoute.UPDATE_NAME),
+                        franchiseHandler::updateFranchise);
     }
 }
