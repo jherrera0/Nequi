@@ -9,4 +9,5 @@ public interface IProductHandler {
     Mono<ServerResponse> deleteProduct(ServerRequest request);
     Mono<ServerResponse> addProductStock(ServerRequest request);
     Mono<ServerResponse> getTopStockProductsByBranchAssociatedToFranchise(ServerRequest request);
+    Mono<ServerResponse> updateProductName(ServerRequest request);
 }
