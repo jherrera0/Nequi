@@ -1,6 +1,8 @@
 package nequichallenge.franchises.infrastructure.input;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -43,12 +45,12 @@ public class ProductRoute {
                                                             name = "ProductoEjemplo",
                                                             summary = "Ejemplo de producto",
                                                             value = """
-                                                                {
-                                                                  "branchId": 1,
-                                                                  "name": "Latte",
-                                                                  "stock": 10
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "branchId": 1,
+                                                                      "name": "Latte",
+                                                                      "stock": 10
+                                                                    }
+                                                                    """
                                                     )
                                             }
                                     )
@@ -63,13 +65,13 @@ public class ProductRoute {
                                                             name = "ProductoCreado",
                                                             summary = "Respuesta exitosa",
                                                             value = """
-                                                                {
-                                                                  "id": 10,
-                                                                  "branchId": 1,
-                                                                  "name": "Latte",
-                                                                  "price": 5
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "id": 10,
+                                                                      "branchId": 1,
+                                                                      "name": "Latte",
+                                                                      "price": 5
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     ),
@@ -82,13 +84,13 @@ public class ProductRoute {
                                                             name = "ErrorSolicitudInvalida",
                                                             summary = "Error en la solicitud",
                                                             value = """
-                                                                {
-                                                                  "status": 400,
-                                                                  "error": "Bad Request",
-                                                                  "message": "Product already exists or invalid input",
-                                                                  "path": "/product/create"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "status": 400,
+                                                                      "error": "Bad Request",
+                                                                      "message": "Product already exists or invalid input",
+                                                                      "path": "/product/create"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     )
@@ -114,10 +116,10 @@ public class ProductRoute {
                                                             name = "EliminarProductoEjemplo",
                                                             summary = "Ejemplo de solicitud para eliminar producto",
                                                             value = """
-                                                                {
-                                                                  "id": 10
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "id": 10
+                                                                    }
+                                                                    """
                                                     )
                                             }
                                     )
@@ -132,13 +134,13 @@ public class ProductRoute {
                                                             name = "ErrorEliminacionProducto",
                                                             summary = "Error al eliminar producto",
                                                             value = """
-                                                                {
-                                                                    "id": 1,
-                                                                    "name": "1",
-                                                                    "stock": 10,
-                                                                    "isActive": false
-                                                                }
-                                                                """
+                                                                    {
+                                                                        "id": 1,
+                                                                        "name": "1",
+                                                                        "stock": 10,
+                                                                        "isActive": false
+                                                                    }
+                                                                    """
                                                     )
                                             )
 
@@ -152,13 +154,13 @@ public class ProductRoute {
                                                             name = "ErrorEliminacionProducto",
                                                             summary = "Error al eliminar producto",
                                                             value = """
-                                                                {
-                                                                  "status": 400,
-                                                                  "error": "Bad Request",
-                                                                  "message": "Product does not exist",
-                                                                  "path": "/product/delete"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "status": 400,
+                                                                      "error": "Bad Request",
+                                                                      "message": "Product does not exist",
+                                                                      "path": "/product/delete"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     ),
@@ -171,13 +173,13 @@ public class ProductRoute {
                                                             name = "ErrorInternoServidor",
                                                             summary = "Error interno",
                                                             value = """
-                                                                {
-                                                                  "status": 500,
-                                                                  "error": "Internal Server Error",
-                                                                  "message": "Foreign key constraint fails",
-                                                                  "path": "/product/delete"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "status": 500,
+                                                                      "error": "Internal Server Error",
+                                                                      "message": "Foreign key constraint fails",
+                                                                      "path": "/product/delete"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     )
@@ -202,11 +204,11 @@ public class ProductRoute {
                                                     name = "AgregarStockEjemplo",
                                                     summary = "Ejemplo para agregar stock",
                                                     value = """
-                                                        {
-                                                          "id": 10,
-                                                          "quantity": 5
-                                                        }
-                                                        """
+                                                            {
+                                                              "id": 10,
+                                                              "quantity": 5
+                                                            }
+                                                            """
                                             )
                                     )
                             ),
@@ -220,13 +222,13 @@ public class ProductRoute {
                                                             name = "StockActualizado",
                                                             summary = "Respuesta exitosa",
                                                             value = """
-                                                                {
-                                                                  "id": 10,
-                                                                  "name": "Latte",
-                                                                  "stock": 15,
-                                                                  "isActive": true
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "id": 10,
+                                                                      "name": "Latte",
+                                                                      "stock": 15,
+                                                                      "isActive": true
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     ),
@@ -239,26 +241,119 @@ public class ProductRoute {
                                                             name = "ErrorStock",
                                                             summary = "Error al actualizar stock",
                                                             value = """
-                                                                {
-                                                                  "status": 400,
-                                                                  "error": "Bad Request",
-                                                                  "message": "Product does not exist or invalid quantity",
-                                                                  "path": "/product/add-product-stock"
-                                                                }
-                                                                """
+                                                                    {
+                                                                      "status": 400,
+                                                                      "error": "Bad Request",
+                                                                      "message": "Product does not exist or invalid quantity",
+                                                                      "path": "/product/add-product-stock"
+                                                                    }
+                                                                    """
                                                     )
                                             )
                                     )
                             }
                     )
+            ), @RouterOperation(
+            path = "/product/getTopStockProductsByBranchAssociatedToFranchise/{franchiseId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.GET,
+            beanClass = IProductHandler.class,
+            beanMethod = "getTopStockProductsByBranchAssociatedToFranchise",
+            operation = @Operation(
+                    operationId = "getTopStockProductsByBranchAssociatedToFranchise",
+                    summary = "Obtener productos con más stock por sucursal",
+                    description = """
+                            Retorna una lista de los productos con mayor cantidad de stock por cada sucursal asociada 
+                            a una franquicia específica. 
+                            """,
+                    parameters = {
+                            @Parameter(
+                                    name = "franchiseId",
+                                    description = "ID de la franquicia",
+                                    required = true,
+                                    example = "1",
+                                    in = ParameterIn.PATH
+                            )
+                    },
+                    responses = {
+                            @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Lista de productos con mayor stock por sucursal",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "TopProductosStock",
+                                                    summary = "Respuesta exitosa",
+                                                    value = """
+                                                                [
+                                                                  {
+                                                                    "branchId": 1,
+                                                                    "branchName": "Sucursal Centro",
+                                                                    "productId": 1,
+                                                                    "productName": "Café Americano",
+                                                                    "stock": 100
+                                                                  },
+                                                                  {
+                                                                    "branchId": 2,
+                                                                    "branchName": "Sucursal Norte",
+                                                                    "productId": 3,
+                                                                    "productName": "Latte",
+                                                                    "stock": 80
+                                                                  }
+                                                                ]
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "404",
+                                    description = "No se encontraron sucursales o productos para la franquicia indicada",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "ErrorNoEncontrado",
+                                                    summary = "Error cuando no hay datos",
+                                                    value = """
+                                                                {
+                                                                  "status": 404,
+                                                                  "error": "Not Found",
+                                                                  "message": "No branches or products found for this franchise",
+                                                                  "path": "/product/getTopStockProductsByBranchAssociatedToFranchise/1"
+                                                                }
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "500",
+                                    description = "Error interno del servidor",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "ErrorInterno",
+                                                    summary = "Fallo inesperado",
+                                                    value = """
+                                                                {
+                                                                  "status": 500,
+                                                                  "error": "Internal Server Error",
+                                                                  "message": "Unexpected error while processing the request",
+                                                                  "path": "/product/getTopStockProductsByBranchAssociatedToFranchise/1"
+                                                                }
+                                                            """
+                                            )
+                                    )
+                            )
+                    }
             )
+    )
+
     })
     public RouterFunction<ServerResponse> productRoutes(IProductHandler productHandler) {
         return route(POST(ConstRoute.PRODUCT + ConstRoute.CREATE), productHandler::createProduct)
                 .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.DELETE), productHandler::deleteProduct)
-                .andRoute(POST(ConstRoute.PRODUCT+ConstRoute.ADD_PRODUCT_STOCK_REST_ROUTE),
+                .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.ADD_PRODUCT_STOCK_REST_ROUTE),
                         productHandler::addProductStock)
-                .andRoute(GET(ConstRoute.PRODUCT+ConstRoute.GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE),
+                .andRoute(GET(ConstRoute.PRODUCT + ConstRoute.GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE),
                         productHandler::getTopStockProductsByBranchAssociatedToFranchise);
     }
 }
