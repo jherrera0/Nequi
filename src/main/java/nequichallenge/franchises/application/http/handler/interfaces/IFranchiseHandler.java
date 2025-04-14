@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface IFranchiseHandler {
     Mono<ServerResponse> createFranchise(ServerRequest request);
+    Mono<ServerResponse> updateFranchise(ServerRequest request);
 }
