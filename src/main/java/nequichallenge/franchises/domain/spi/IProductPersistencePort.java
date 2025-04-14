@@ -8,4 +8,5 @@ public interface IProductPersistencePort {
     Mono<Boolean> existsByName(String name);
     Mono<Product> findById(Integer id);
     Mono<Product> updateProduct(Product existingProduct);
+    Mono<Product> getTopStockProductsByBranchId(Integer id);
 }

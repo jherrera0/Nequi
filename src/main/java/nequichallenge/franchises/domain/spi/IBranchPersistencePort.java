@@ -1,6 +1,7 @@
 package nequichallenge.franchises.domain.spi;
 
 import nequichallenge.franchises.domain.model.Branch;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface IBranchPersistencePort {
@@ -8,4 +9,6 @@ public interface IBranchPersistencePort {
     Mono<Boolean> existsByName(String name);
 
     Mono<Boolean> existsById(Integer branchId);
+
+    Flux<Branch> getBranchesByFranchiseId(Integer franchiseId);
 }
