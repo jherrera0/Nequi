@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 class FranchiseAdapterTest {
 
     private FranchiseAdapter franchiseAdapter;
@@ -58,7 +60,7 @@ class FranchiseAdapterTest {
 
         Mono<Boolean> result = franchiseAdapter.franchiseExistsByName(franchiseName);
 
-        assertTrue(result.block());
+        assertEquals(Boolean.TRUE, result.block());
         verify(franchiseRepository).existsByName(franchiseName);
     }
 
@@ -71,7 +73,7 @@ class FranchiseAdapterTest {
 
         Mono<Boolean> result = franchiseAdapter.franchiseExistsByName(franchiseName);
 
-        assertFalse(result.block());
+        assertNotEquals(Boolean.TRUE, result.block());
         verify(franchiseRepository).existsByName(franchiseName);
     }
     @Test
@@ -83,7 +85,7 @@ class FranchiseAdapterTest {
 
         Mono<Boolean> result = franchiseAdapter.franchiseExistsById(franchiseId);
 
-        assertTrue(result.block());
+        assertEquals(Boolean.TRUE, result.block());
         verify(franchiseRepository).existsById(franchiseId);
     }
 
@@ -96,7 +98,57 @@ class FranchiseAdapterTest {
 
         Mono<Boolean> result = franchiseAdapter.franchiseExistsById(franchiseId);
 
-        assertFalse(result.block());
+        assertNotEquals(Boolean.TRUE, result.block());
         verify(franchiseRepository).existsById(franchiseId);
+    }
+    @Test
+    @DisplayName("should return franchise when found by id")
+    void shouldReturnFranchiseWhenFoundById() {
+        Integer franchiseId = 1;
+        FranchiseEntity franchiseEntity = new FranchiseEntity(franchiseId, "Franchise Name");
+        Franchise franchise = new Franchise(franchiseId, "Franchise Name", List.of());
+
+        when(franchiseRepository.findById(franchiseId)).thenReturn(Mono.just(franchiseEntity));
+        when(franchiseEntityMapper.toFranchise(franchiseEntity)).thenReturn(franchise);
+
+        Mono<Franchise> result = franchiseAdapter.findById(franchiseId);
+
+        assertEquals(franchise, result.block());
+        verify(franchiseRepository).findById(franchiseId);
+        verify(franchiseEntityMapper).toFranchise(franchiseEntity);
+    }
+
+    @Test
+    @DisplayName("should return empty when franchise not found by id")
+    void shouldReturnEmptyWhenFranchiseNotFoundById() {
+        Integer franchiseId = 999;
+
+        when(franchiseRepository.findById(franchiseId)).thenReturn(Mono.empty());
+
+        Mono<Franchise> result = franchiseAdapter.findById(franchiseId);
+
+        assertNull(result.block());
+        verify(franchiseRepository).findById(franchiseId);
+        verify(franchiseEntityMapper, never()).toFranchise(any());
+    }
+
+    @Test
+    @DisplayName("should update franchise successfully when franchise exists")
+    void shouldUpdateFranchiseSuccessfullyWhenFranchiseExists() {
+        FranchiseEntity existingEntity = new FranchiseEntity(1, "Old Name");
+        FranchiseEntity updatedEntity = new FranchiseEntity(1, "New Name");
+        Franchise franchiseToUpdate = new Franchise(1, "New Name", List.of());
+        Franchise updatedFranchise = new Franchise(1, "New Name", List.of());
+
+        when(franchiseRepository.findById(1)).thenReturn(Mono.just(existingEntity));
+        when(franchiseRepository.save(existingEntity)).thenReturn(Mono.just(updatedEntity));
+        when(franchiseEntityMapper.toFranchise(updatedEntity)).thenReturn(updatedFranchise);
+
+        Mono<Franchise> result = franchiseAdapter.updateFranchise(franchiseToUpdate);
+
+        assertEquals(updatedFranchise, result.block());
+        verify(franchiseRepository).findById(1);
+        verify(franchiseRepository).save(existingEntity);
+        verify(franchiseEntityMapper).toFranchise(updatedEntity);
     }
 }
