@@ -344,8 +344,93 @@ public class ProductRoute {
                             )
                     }
             )
+    ), @RouterOperation(
+            path = "/product/updateName",
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.POST,
+            beanClass = IProductHandler.class,
+            beanMethod = "updateProductName",
+            operation = @Operation(
+                    operationId = "updateProductName",
+                    summary = "Actualizar nombre de un producto",
+                    description = "Actualiza el nombre de un producto existente dado su ID.",
+                    requestBody = @RequestBody(
+                            required = true,
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    examples = @ExampleObject(
+                                            name = "ActualizarNombreProductoEjemplo",
+                                            summary = "Ejemplo de solicitud para actualizar nombre de un producto",
+                                            value = """
+                                                    {
+                                                      "id": 10,
+                                                      "name": "Espresso"
+                                                    }
+                                                    """
+                                    )
+                            )
+                    ),
+                    responses = {
+                            @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Nombre del producto actualizado exitosamente",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "ProductoNombreActualizado",
+                                                    summary = "Respuesta exitosa",
+                                                    value = """
+                                                            {
+                                                              "id": 10,
+                                                              "name": "Espresso",
+                                                              "stock": 10,
+                                                              "isActive": true
+                                                            }
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "400",
+                                    description = "Solicitud inválida por datos incorrectos o inexistencia del producto",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "ErrorActualizacionNombre",
+                                                    summary = "Error al actualizar nombre",
+                                                    value = """
+                                                            {
+                                                              "status": 400,
+                                                              "error": "Bad Request",
+                                                              "message": "Product not found or invalid name",
+                                                              "path": "/product/update-name"
+                                                            }
+                                                            """
+                                            )
+                                    )
+                            ),
+                            @ApiResponse(
+                                    responseCode = "500",
+                                    description = "Error interno del servidor al actualizar el nombre",
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            examples = @ExampleObject(
+                                                    name = "ErrorInternoActualizacion",
+                                                    summary = "Error inesperado",
+                                                    value = """
+                                                            {
+                                                              "status": 500,
+                                                              "error": "Internal Server Error",
+                                                              "message": "Unexpected error while updating product name",
+                                                              "path": "/product/update-name"
+                                                            }
+                                                            """
+                                            )
+                                    )
+                            )
+                    }
+            )
     )
-
     })
     public RouterFunction<ServerResponse> productRoutes(IProductHandler productHandler) {
         return route(POST(ConstRoute.PRODUCT + ConstRoute.CREATE), productHandler::createProduct)
@@ -354,6 +439,6 @@ public class ProductRoute {
                         productHandler::addProductStock)
                 .andRoute(GET(ConstRoute.PRODUCT + ConstRoute.GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE),
                         productHandler::getTopStockProductsByBranchAssociatedToFranchise)
-                .andRoute(POST(ConstRoute.PRODUCT+ConstRoute.UPDATE_NAME), productHandler::updateProductName);
+                .andRoute(POST(ConstRoute.PRODUCT + ConstRoute.UPDATE_NAME), productHandler::updateProductName);
     }
 }
