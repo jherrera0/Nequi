@@ -8,7 +8,6 @@ import nequichallenge.franchises.domain.exception.FranchiseNotFoundException;
 import nequichallenge.franchises.domain.model.Branch;
 import nequichallenge.franchises.domain.spi.IBranchPersistencePort;
 import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
-import nequichallenge.franchises.domain.util.ConstValidations;
 import reactor.core.publisher.Mono;
 
 public class BranchCase implements IBranchServicePort {
@@ -22,43 +21,40 @@ public class BranchCase implements IBranchServicePort {
 
     @Override
     public Mono<Branch> addBranch(Integer franchiseId, String name) {
-        Mono<Branch> error = validateParams(name);
-        if (error != null) return error;
-        return franchisePersistencePort.franchiseExistsById(franchiseId)
-                .flatMap(
-                        exists -> {
-                            if (exists.compareTo(Boolean.FALSE) == ConstValidations.ZERO) {
-                                return Mono.error(new FranchiseNotFoundException());
-                            }
-                            return branchPersistencePort.existsByName(name)
-                                    .flatMap(existsName -> {
-                                        if (existsName.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
-                                            return Mono.error(new BranchAlreadyExistException());
-                                        }
-                                        return branchPersistencePort.addBranch(franchiseId, name);
-                                    });
-                        }
+        return validateParams(name)
+                .flatMap(validName ->
+                        franchisePersistencePort.franchiseExistsById(franchiseId)
+                                .filter(Boolean::booleanValue)
+                                .switchIfEmpty(Mono.error(new FranchiseNotFoundException()))
+                                .flatMap(ignored ->
+                                        branchPersistencePort.existsByName(validName)
+                                                .filter(exists -> !exists)
+                                                .switchIfEmpty(Mono.error(new BranchAlreadyExistException()))
+                                                .flatMap(ignored2 ->
+                                                        branchPersistencePort.addBranch(franchiseId, validName)
+                                                )
+                                )
+                );
+    }
+    @Override
+    public Mono<Branch> updateName(Branch branch) {
+        return Mono.just(branch)
+                .filter(b -> b.getName() != null && !b.getName().isEmpty())
+                .switchIfEmpty(Mono.error(new BranchNameEmptyException()))
+                .flatMap(validBranch ->
+                        branchPersistencePort.findById(validBranch.getId())
+                                .switchIfEmpty(Mono.error(new BranchNotFoundException()))
+                                .flatMap(existedBranch -> {
+                                    existedBranch.setName(validBranch.getName());
+                                    return branchPersistencePort.updateBranch(existedBranch);
+                                })
                 );
     }
 
-    @Override
-    public Mono<Branch> updateName(Branch branch) {
-        if (branch.getName() == null || branch.getName().isEmpty()) {
-            return Mono.error(new BranchNameEmptyException());
-        }
-        return branchPersistencePort.findById(branch.getId())
-                .flatMap(existedBranch ->{
-
-                    existedBranch.setName(branch.getName());
-                    return branchPersistencePort.updateBranch(existedBranch);
-                })
-                .switchIfEmpty(Mono.error(new BranchNotFoundException()));
-    }
-
-    private static Mono<Branch> validateParams(String name) {
+    private static Mono<String> validateParams(String name) {
         if (name == null || name.isEmpty()) {
             return Mono.error(new BranchNameEmptyException());
         }
-        return null;
+        return Mono.just(name);
     }
 }

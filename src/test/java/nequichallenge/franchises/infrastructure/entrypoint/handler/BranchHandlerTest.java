@@ -1,4 +1,8 @@
 package nequichallenge.franchises.infrastructure.entrypoint.handler;
+import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
+import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
+import nequichallenge.franchises.domain.exception.BranchNotFoundException;
+import nequichallenge.franchises.domain.exception.FranchiseNameAlreadyExist;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddBranchDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.BranchCustomDtoResponse;
@@ -11,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.reactive.function.server.MockServerRequest;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
@@ -77,5 +82,77 @@ class BranchHandlerTest {
                 .verifyComplete();
     }
 
+    @Test
+    void addBranchReturnsBadRequestWhenBranchAlreadyExists() {
+        AddBranchDtoRequest requestDto = new AddBranchDtoRequest(1, "Existing Branch");
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchService.addBranch(1, "Existing Branch"))
+                .thenReturn(Mono.error(new BranchAlreadyExistException()));
+
+        StepVerifier.create(branchHandler.addBranch(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.BAD_REQUEST))
+                .verifyComplete();
+    }
+
+    @Test
+    void addBranchReturnsBadRequestWhenBranchNameIsEmpty() {
+        AddBranchDtoRequest requestDto = new AddBranchDtoRequest(1, "");
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchService.addBranch(1, ""))
+                .thenReturn(Mono.error(new BranchNameEmptyException()));
+
+        StepVerifier.create(branchHandler.addBranch(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.BAD_REQUEST))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateNameReturnsNotFoundWhenBranchDoesNotExist() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(1, "Nonexistent Branch");
+        Branch domainBranch = new Branch(1, "Nonexistent Branch", List.of());
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchDtoMapper.toDomain(requestDto)).thenReturn(domainBranch);
+        when(branchService.updateName(domainBranch))
+                .thenReturn(Mono.error(new BranchNotFoundException()));
+
+        StepVerifier.create(branchHandler.updateName(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.NOT_FOUND))
+                .verifyComplete();
+    }
+    @Test
+    void addBranchReturnsBadRequestWhenFranchiseNameAlreadyExists() {
+        AddBranchDtoRequest requestDto = new AddBranchDtoRequest(1, "Duplicate Franchise Name");
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchService.addBranch(1, "Duplicate Franchise Name"))
+                .thenReturn(Mono.error(new FranchiseNameAlreadyExist()));
+
+        StepVerifier.create(branchHandler.addBranch(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.BAD_REQUEST))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateNameReturnsBadRequestWhenBranchNameIsEmpty() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(1, "");
+        Branch domainBranch = new Branch(1, "", List.of());
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(branchDtoMapper.toDomain(requestDto)).thenReturn(domainBranch);
+        when(branchService.updateName(domainBranch))
+                .thenReturn(Mono.error(new BranchNameEmptyException()));
+
+        StepVerifier.create(branchHandler.updateName(serverRequest))
+                .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.BAD_REQUEST))
+                .verifyComplete();
+    }
 
 }

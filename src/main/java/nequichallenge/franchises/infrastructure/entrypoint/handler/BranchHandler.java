@@ -2,11 +2,16 @@ package nequichallenge.franchises.infrastructure.entrypoint.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nequichallenge.franchises.domain.exception.BranchAlreadyExistException;
+import nequichallenge.franchises.domain.exception.BranchNameEmptyException;
+import nequichallenge.franchises.domain.exception.BranchNotFoundException;
+import nequichallenge.franchises.domain.exception.FranchiseNameAlreadyExist;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddBranchDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.handler.interfaces.IBranchHandler;
 import nequichallenge.franchises.infrastructure.entrypoint.mapper.IBranchDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -29,6 +34,18 @@ public class BranchHandler implements IBranchHandler {
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response)
+                ).onErrorResume(FranchiseNameAlreadyExist.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(BranchAlreadyExistException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(BranchNameEmptyException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
                 );
     }
 
@@ -41,6 +58,14 @@ public class BranchHandler implements IBranchHandler {
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response)
+                ).onErrorResume(BranchNameEmptyException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(BranchNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
                 );
     }
 }
