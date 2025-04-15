@@ -48,6 +48,7 @@ public class BranchCase implements IBranchServicePort {
         }
         return branchPersistencePort.findById(branch.getId())
                 .flatMap(existedBranch ->{
+
                     existedBranch.setName(branch.getName());
                     return branchPersistencePort.updateBranch(existedBranch);
                 })

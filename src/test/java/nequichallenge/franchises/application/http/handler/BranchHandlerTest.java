@@ -1,9 +1,10 @@
 package nequichallenge.franchises.application.http.handler;
-import nequichallenge.franchises.application.http.dto.request.AddBranchDtoRequest;
-import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
-import nequichallenge.franchises.application.http.dto.response.BranchCustomDtoResponse;
-import nequichallenge.franchises.application.http.dto.response.BranchDtoResponse;
-import nequichallenge.franchises.application.http.mapper.IBranchDtoMapper;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddBranchDtoRequest;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.response.BranchCustomDtoResponse;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.response.BranchDtoResponse;
+import nequichallenge.franchises.infrastructure.entrypoint.handler.BranchHandler;
+import nequichallenge.franchises.infrastructure.entrypoint.mapper.IBranchDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
 import nequichallenge.franchises.domain.model.Branch;
 import org.junit.jupiter.api.Test;

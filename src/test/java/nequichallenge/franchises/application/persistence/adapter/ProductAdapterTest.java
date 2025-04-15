@@ -2,9 +2,10 @@ package nequichallenge.franchises.application.persistence.adapter;
 
 import static org.mockito.Mockito.*;
 
-import nequichallenge.franchises.application.persistence.entity.ProductEntity;
-import nequichallenge.franchises.application.persistence.mapper.IProductEntityMapper;
-import nequichallenge.franchises.application.persistence.repository.IProductRepository;
+import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.ProductAdapter;
+import nequichallenge.franchises.infrastructure.adapters.persistence.entity.ProductEntity;
+import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IProductEntityMapper;
+import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IProductRepository;
 import nequichallenge.franchises.domain.model.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

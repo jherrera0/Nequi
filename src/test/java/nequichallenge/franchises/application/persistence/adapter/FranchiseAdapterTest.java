@@ -3,9 +3,10 @@ package nequichallenge.franchises.application.persistence.adapter;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import nequichallenge.franchises.application.persistence.entity.FranchiseEntity;
-import nequichallenge.franchises.application.persistence.mapper.IFranchiseEntityMapper;
-import nequichallenge.franchises.application.persistence.repository.IFranchiseRepository;
+import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.FranchiseAdapter;
+import nequichallenge.franchises.infrastructure.adapters.persistence.entity.FranchiseEntity;
+import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IFranchiseEntityMapper;
+import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IFranchiseRepository;
 import nequichallenge.franchises.domain.model.Franchise;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

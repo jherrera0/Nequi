@@ -1,10 +1,11 @@
 package nequichallenge.franchises.application.http.handler;
 
-import nequichallenge.franchises.application.http.dto.request.CreateFranchiseDtoRequest;
-import nequichallenge.franchises.application.http.dto.request.UpdateNameDtoRequest;
-import nequichallenge.franchises.application.http.dto.response.FranchiseCustomDtoResponse;
-import nequichallenge.franchises.application.http.dto.response.FranchiseDtoResponse;
-import nequichallenge.franchises.application.http.mapper.IFranchiseDtoMapper;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.request.CreateFranchiseDtoRequest;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.response.FranchiseCustomDtoResponse;
+import nequichallenge.franchises.infrastructure.entrypoint.dto.response.FranchiseDtoResponse;
+import nequichallenge.franchises.infrastructure.entrypoint.handler.FranchiseHandler;
+import nequichallenge.franchises.infrastructure.entrypoint.mapper.IFranchiseDtoMapper;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
 import nequichallenge.franchises.domain.model.Franchise;
 import org.junit.jupiter.api.BeforeEach;

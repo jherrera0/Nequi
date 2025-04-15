@@ -1,8 +1,9 @@
 package nequichallenge.franchises.application.persistence.adapter;
 
-import nequichallenge.franchises.application.persistence.entity.BranchEntity;
-import nequichallenge.franchises.application.persistence.mapper.IBranchEntityMapper;
-import nequichallenge.franchises.application.persistence.repository.IBranchRepository;
+import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.BranchAdapter;
+import nequichallenge.franchises.infrastructure.adapters.persistence.entity.BranchEntity;
+import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IBranchEntityMapper;
+import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IBranchRepository;
 import nequichallenge.franchises.domain.model.Branch;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
