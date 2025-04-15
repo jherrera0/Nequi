@@ -1,9 +1,8 @@
-package nequichallenge.franchises.application.persistence.adapter;
+package nequichallenge.franchises.infrastructure.adapters.persistence.adapter;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.FranchiseAdapter;
 import nequichallenge.franchises.infrastructure.adapters.persistence.entity.FranchiseEntity;
 import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IFranchiseEntityMapper;
 import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IFranchiseRepository;

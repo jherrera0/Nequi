@@ -1,4 +1,4 @@
-package nequichallenge.franchises.application.http.handler;
+package nequichallenge.franchises.infrastructure.entrypoint.handler;
 
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.CreateProductDtoRequest;
@@ -6,7 +6,6 @@ import nequichallenge.franchises.infrastructure.entrypoint.dto.request.DeletePro
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.ProductDtoResponse;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.ProductTopStockDtoResponse;
-import nequichallenge.franchises.infrastructure.entrypoint.handler.ProductHandler;
 import nequichallenge.franchises.infrastructure.entrypoint.mapper.IProductDtoMapper;
 import nequichallenge.franchises.domain.api.IProductServicePort;
 import nequichallenge.franchises.domain.model.Product;

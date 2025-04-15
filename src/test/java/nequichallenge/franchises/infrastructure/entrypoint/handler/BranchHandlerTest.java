@@ -1,9 +1,8 @@
-package nequichallenge.franchises.application.http.handler;
+package nequichallenge.franchises.infrastructure.entrypoint.handler;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddBranchDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.BranchCustomDtoResponse;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.BranchDtoResponse;
-import nequichallenge.franchises.infrastructure.entrypoint.handler.BranchHandler;
 import nequichallenge.franchises.infrastructure.entrypoint.mapper.IBranchDtoMapper;
 import nequichallenge.franchises.domain.api.IBranchServicePort;
 import nequichallenge.franchises.domain.model.Branch;

@@ -1,6 +1,5 @@
-package nequichallenge.franchises.application.persistence.adapter;
+package nequichallenge.franchises.infrastructure.adapters.persistence.adapter;
 
-import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.BranchAdapter;
 import nequichallenge.franchises.infrastructure.adapters.persistence.entity.BranchEntity;
 import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IBranchEntityMapper;
 import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IBranchRepository;

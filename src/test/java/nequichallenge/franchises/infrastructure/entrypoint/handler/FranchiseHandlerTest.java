@@ -1,10 +1,9 @@
-package nequichallenge.franchises.application.http.handler;
+package nequichallenge.franchises.infrastructure.entrypoint.handler;
 
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.CreateFranchiseDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNameDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.FranchiseCustomDtoResponse;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.response.FranchiseDtoResponse;
-import nequichallenge.franchises.infrastructure.entrypoint.handler.FranchiseHandler;
 import nequichallenge.franchises.infrastructure.entrypoint.mapper.IFranchiseDtoMapper;
 import nequichallenge.franchises.domain.api.IFranchiseServicePort;
 import nequichallenge.franchises.domain.model.Franchise;

@@ -1,8 +1,7 @@
-package nequichallenge.franchises.application.persistence.adapter;
+package nequichallenge.franchises.infrastructure.adapters.persistence.adapter;
 
 import static org.mockito.Mockito.*;
 
-import nequichallenge.franchises.infrastructure.adapters.persistence.adapter.ProductAdapter;
 import nequichallenge.franchises.infrastructure.adapters.persistence.entity.ProductEntity;
 import nequichallenge.franchises.infrastructure.adapters.persistence.mapper.IProductEntityMapper;
 import nequichallenge.franchises.infrastructure.adapters.persistence.repository.IProductRepository;
