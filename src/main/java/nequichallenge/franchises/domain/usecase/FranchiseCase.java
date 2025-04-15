@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 public class FranchiseCase implements IFranchiseServicePort {
 
     private final IFranchisePersistencePort franchisePersistencePort;
+
     public FranchiseCase(IFranchisePersistencePort franchisePersistencePort) {
         this.franchisePersistencePort = franchisePersistencePort;
     }
@@ -31,21 +32,22 @@ public class FranchiseCase implements IFranchiseServicePort {
 
     @Override
     public Mono<Franchise> updateName(Franchise franchise) {
-        if (franchise.getName() == null || franchise.getName().isEmpty()) {
-            return Mono.error(new FranchiseNameEmptyException());
-        }
-
-        return franchisePersistencePort.findById(franchise.getId())
-                .flatMap(existedFranchise -> franchisePersistencePort.franchiseExistsByName(franchise.getName())
-                        .flatMap(
-                                existsName -> {
-                                    if (existsName.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
-                                        return Mono.error(new FranchiseNameAlreadyExist());
-                                    }
-                                    existedFranchise.setName(franchise.getName());
-                                    return franchisePersistencePort.updateFranchise(existedFranchise);
-                                }
-                        ))
-                .switchIfEmpty(Mono.error(new FranchiseNotFoundException()));
+        return Mono.just(franchise)
+                .filter(f -> f.getName() != null && !f.getName().isEmpty())
+                .switchIfEmpty(Mono.error(new FranchiseNameEmptyException()))
+                .flatMap(validFranchise ->
+                        franchisePersistencePort.findById(validFranchise.getId())
+                                .switchIfEmpty(Mono.error(new FranchiseNotFoundException()))
+                                .flatMap(existedFranchise ->
+                                        franchisePersistencePort.franchiseExistsByName(validFranchise.getName())
+                                                .filter(exists -> exists.compareTo(Boolean.TRUE) != ConstValidations.ZERO)
+                                                .switchIfEmpty(Mono.error(new FranchiseNameAlreadyExist()))
+                                                .flatMap(exists -> {
+                                                    existedFranchise.setName(validFranchise.getName());
+                                                    return franchisePersistencePort.updateFranchise(existedFranchise);
+                                                })
+                                )
+                );
     }
+
 }
