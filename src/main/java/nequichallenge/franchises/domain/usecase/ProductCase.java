@@ -25,81 +25,82 @@ public class ProductCase implements IProductServicePort {
     }
 
     @Override
-    public Mono<Product> createProduct(Integer branchId,Product product) {
-        Mono<Product> error = validateParams(branchId, product);
-        if (error != null) return error;
-        product.setIsActive(true);
-        return branchPersistencePort.existsById(branchId)
-                .flatMap(exists -> {
-                    if (exists.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
-                        return productPersistencePort.existsByName(product.getName())
-                                .flatMap(existsProduct -> {
-                                    if (existsProduct.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
-                                        return Mono.error(new ProductAlreadyExistsException());
-                                    }
-                                    return productPersistencePort.createProduct(branchId, product);
-                                });
-                    }
-                    return Mono.error(new BranchNotFoundException());
+    public Mono<Product> createProduct(Integer branchId, Product product) {
+        return validateParams(branchId, product)
+                .switchIfEmpty(Mono.just(product))
+                .flatMap(validProduct -> {
+                    validProduct.setIsActive(true);
+                    return branchPersistencePort.existsById(branchId)
+                            .filter(branchExists -> branchExists.compareTo(Boolean.TRUE) == ConstValidations.ZERO)
+                            .switchIfEmpty(Mono.error(new BranchNotFoundException()))
+                            .flatMap(branchValidated ->
+                                    productPersistencePort.existsByName(validProduct.getName())
+                                            .filter(productNotExists -> productNotExists.compareTo(Boolean.FALSE)
+                                                    == ConstValidations.ZERO)
+                                            .switchIfEmpty(Mono.error(new ProductAlreadyExistsException()))
+                                            .flatMap(productValidated ->
+                                                    productPersistencePort.createProduct(branchId, validProduct)
+                                            )
+                            );
                 });
     }
+
 
     @Override
     public Mono<Product> deleteProduct(Product product) {
         return productPersistencePort.findById(product.getId())
+                .filter(Product::getIsActive)
+                .switchIfEmpty(Mono.error(new ProductNotFoundException()))
                 .flatMap(existingProduct -> {
                     existingProduct.setIsActive(false);
                     return productPersistencePort.updateProduct(existingProduct);
-                })
-                .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+                });
     }
 
     @Override
     public Mono<Product> addProductStock(Product product) {
         return productPersistencePort.findById(product.getId())
+                .switchIfEmpty(Mono.error(new ProductNotFoundException()))
+                .filter(existingProduct -> product.getStock() > ConstValidations.ZERO)
+                .switchIfEmpty(Mono.error(new ProductStockInvalidException()))
                 .flatMap(existingProduct -> {
-                    if(product.getStock()<= ConstValidations.ZERO) {
-                        return Mono.error(new ProductStockInvalidException());
-                    }
                     existingProduct.setStock(product.getStock());
                     return productPersistencePort.updateProduct(existingProduct);
-                })
-                .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+                });
     }
+
 
     @Override
     public Flux<ProductTopStock> getTopStockProductsByBranchAssociatedToFranchise(Integer franchiseId) {
-        return franchisePersistencePort.franchiseExistsById(franchiseId).flatMapMany(
-                exists -> {
-                    if (exists.compareTo(Boolean.TRUE) == ConstValidations.ZERO) {
-                        return branchPersistencePort.getBranchesByFranchiseId(franchiseId)
-                                .flatMap(branch -> productPersistencePort.getTopStockProductsByBranchId(branch.getId())
-                                        .map(product -> new ProductTopStock(
-                                                branch.getId(),
-                                                branch.getName(),
-                                                product.getId(),
-                                                product.getName(),
-                                                product.getStock()
-                                        ))
-                                );
-                    }
-                    return Flux.error(new FranchiseNotFoundException());
-                }
-        );
+        return franchisePersistencePort.franchiseExistsById(franchiseId)
+                .filter(exists -> exists.compareTo(Boolean.TRUE) == ConstValidations.ZERO)
+                .switchIfEmpty(Mono.error(new FranchiseNotFoundException()))
+                .flatMapMany(valid -> branchPersistencePort.getBranchesByFranchiseId(franchiseId))
+                .flatMap(branch -> productPersistencePort.getTopStockProductsByBranchId(branch.getId())
+                        .map(product -> new ProductTopStock(
+                                branch.getId(),
+                                branch.getName(),
+                                product.getId(),
+                                product.getName(),
+                                product.getStock()
+                        ))
+                );
     }
 
     @Override
     public Mono<Product> updateProductName(Product product) {
-        if (product.getName() == null || product.getName().isEmpty()) {
-            return Mono.error(new ProductNameEmptyException());
-        }
-        return productPersistencePort.findById(product.getId())
-                .flatMap(existingProduct -> {
-                    existingProduct.setName(product.getName());
-                    return productPersistencePort.updateProduct(existingProduct);
-                })
-                .switchIfEmpty(Mono.error(new ProductNotFoundException()));
+        return Mono.justOrEmpty(product.getName())
+                .filter(name -> !name.isEmpty())
+                .switchIfEmpty(Mono.error(new ProductNameEmptyException()))
+                .flatMap(validName -> productPersistencePort.findById(product.getId())
+                        .switchIfEmpty(Mono.error(new ProductNotFoundException()))
+                        .flatMap(existingProduct -> {
+                            existingProduct.setName(validName);
+                            return productPersistencePort.updateProduct(existingProduct);
+                        })
+                );
     }
+
 
     private static Mono<Product> validateParams(Integer branchId, Product product) {
         if (product.getName() == null || product.getName().isEmpty()) {
@@ -108,9 +109,10 @@ public class ProductCase implements IProductServicePort {
         if (product.getStock() == null || product.getStock() <= ConstValidations.ZERO) {
             return Mono.error(new ProductStockInvalidException());
         }
-        if(branchId == null|| branchId <= ConstValidations.ZERO) {
+        if (branchId == null || branchId <= ConstValidations.ZERO) {
             return Mono.error(new BranchIdInvalidException());
         }
-        return null;
+        return Mono.empty();
     }
+
 }

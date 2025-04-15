@@ -1,5 +1,6 @@
 package nequichallenge.franchises.infrastructure.entrypoint.handler;
 
+import nequichallenge.franchises.domain.exception.*;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.DeleteProductDtoRequest;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.reactive.function.server.MockServerRequest;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Flux;
@@ -31,6 +33,7 @@ class ProductHandlerTest {
 
     @Mock
     private IProductServicePort productServicePort;
+
 
     @Mock
     private IProductDtoMapper productDtoMapper;
@@ -61,18 +64,6 @@ class ProductHandlerTest {
                 .verifyComplete();
     }
 
-    @Test
-    void createProductReturnsErrorWhenRequestBodyIsEmpty() {
-        // Arrange
-        ServerRequest serverRequest = MockServerRequest.builder()
-                .body(Mono.empty());
-
-        // Act & Assert
-        StepVerifier.create(productHandler.createProduct(serverRequest))
-                .expectErrorMatches(error -> error instanceof IllegalArgumentException &&
-                        error.getMessage().equals("Request body cannot be empty"))
-                .verify();
-    }
     @Test
     void createProductReturnsErrorWhenBranchIdIsNull() {
         // Arrange
@@ -167,4 +158,176 @@ class ProductHandlerTest {
                 .verifyComplete();
     }
 
+    @Test
+    void createProductReturnsErrorWhenProductNameIsEmpty() {
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("", 5, 1);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new ProductNameEmptyException());
+
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+
+    @Test
+    void createProductReturnsErrorWhenProductStockIsInvalid() {
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("Latte", -1, 1);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new ProductStockInvalidException());
+
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+
+    @Test
+    void createProductReturnsErrorWhenBranchIdIsInvalid() {
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("Latte", 5, -1);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new BranchIdInvalidException());
+
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+    @Test
+    void createProductReturnsErrorWhenBranchNotFound() {
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("Latte", 5, 999);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new BranchNotFoundException());
+
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 404)
+                .verifyComplete();
+    }
+
+    @Test
+    void createProductReturnsErrorWhenProductAlreadyExists() {
+        CreateProductDtoRequest requestDto = new CreateProductDtoRequest("Latte", 5, 1);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new ProductAlreadyExistsException());
+
+        StepVerifier.create(productHandler.createProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+    @Test
+    void deleteProductReturnsErrorWhenProductNotFound() {
+        DeleteProductDtoRequest requestDto = new DeleteProductDtoRequest(999);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        Product nonExistentProduct = new Product(999, "NonExistentProduct", 0);
+
+        when(productDtoMapper.toProduct(requestDto)).thenReturn(nonExistentProduct);
+        when(productServicePort.deleteProduct(org.mockito.ArgumentMatchers.any(Product.class)))
+                .thenThrow(new ProductNotFoundException());
+
+        StepVerifier.create(productHandler.deleteProduct(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 404)
+                .verifyComplete();
+    }
+
+    @Test
+    void addProductStockReturnsErrorWhenProductNotFound() {
+        AddProductStockDtoRequest requestDto = new AddProductStockDtoRequest(999, 10);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenReturn(new Product(999, "NonExistentProduct", 0));
+        when(productServicePort.addProductStock(org.mockito.ArgumentMatchers.any(Product.class)))
+                .thenThrow(new ProductNotFoundException());
+
+        StepVerifier.create(productHandler.addProductStock(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 404)
+                .verifyComplete();
+    }
+    @Test
+    void updateProductNameReturnsErrorWhenProductNameIsEmpty() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(10, "");
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new ProductNameEmptyException());
+
+        StepVerifier.create(productHandler.updateProductName(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+
+    @Test
+    void addProductStockReturnsErrorWhenStockIsInvalid() {
+        AddProductStockDtoRequest requestDto = new AddProductStockDtoRequest(10, -5);
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenThrow(new ProductStockInvalidException());
+
+        StepVerifier.create(productHandler.addProductStock(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
+
+    @Test
+    void getTopStockProductsByBranchAssociatedToFranchiseReturnsErrorWhenFranchiseNotFound() {
+        Integer franchiseId = 999;
+
+        when(productServicePort.getTopStockProductsByBranchAssociatedToFranchise(franchiseId))
+                .thenReturn(Flux.error(new FranchiseNotFoundException()));
+
+        ServerRequest request = MockServerRequest.builder()
+                .pathVariable("franchiseId", franchiseId.toString())
+                .build();
+
+        StepVerifier.create(productHandler.getTopStockProductsByBranchAssociatedToFranchise(request))
+                .expectNextMatches(response ->
+                        response.statusCode() == HttpStatus.NOT_FOUND
+                )
+                .verifyComplete();
+    }
+
+
+    @Test
+    void updateProductNameReturnsErrorWhenProductNotFound() {
+        UpdateNameDtoRequest requestDto = new UpdateNameDtoRequest(999, "Cappuccino");
+        ServerRequest serverRequest = MockServerRequest.builder()
+                .body(Mono.just(requestDto));
+
+        when(productDtoMapper.toProduct(requestDto))
+                .thenReturn(new Product(999, "NonExistentProduct", 0));
+        when(productServicePort.updateProductName(org.mockito.ArgumentMatchers.any(Product.class)))
+                .thenThrow(new ProductNotFoundException());
+
+        StepVerifier.create(productHandler.updateProductName(serverRequest))
+                .expectNextMatches(response -> response.statusCode().is4xxClientError() &&
+                        response.statusCode().value() == 400)
+                .verifyComplete();
+    }
 }

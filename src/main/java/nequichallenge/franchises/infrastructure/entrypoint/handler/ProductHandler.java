@@ -2,6 +2,7 @@ package nequichallenge.franchises.infrastructure.entrypoint.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nequichallenge.franchises.domain.exception.*;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.AddProductStockDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.CreateProductDtoRequest;
 import nequichallenge.franchises.infrastructure.entrypoint.dto.request.DeleteProductDtoRequest;
@@ -9,6 +10,7 @@ import nequichallenge.franchises.infrastructure.entrypoint.dto.request.UpdateNam
 import nequichallenge.franchises.infrastructure.entrypoint.handler.interfaces.IProductHandler;
 import nequichallenge.franchises.infrastructure.entrypoint.mapper.IProductDtoMapper;
 import nequichallenge.franchises.domain.api.IProductServicePort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -25,14 +27,32 @@ public class ProductHandler implements IProductHandler {
     @Override
     public Mono<ServerResponse> createProduct(ServerRequest request) {
         return request.bodyToMono(CreateProductDtoRequest.class)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
                 .flatMap(dto -> productServicePort.createProduct(dto.getBranchId(),
                         productDtoMapper.toProduct(dto)))
-                .doOnNext(product -> log.info("Created product: {}", product.getId()))
                 .map(productDtoMapper::toProductDto)
-                .doOnNext(productDto -> log.info("Created product: {}", productDto))
                 .flatMap(dtoResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse))
+                .onErrorResume(ProductNameEmptyException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(ProductStockInvalidException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(BranchIdInvalidException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(BranchNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(ProductAlreadyExistsException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                );
     }
 
     @Override
@@ -42,7 +62,12 @@ public class ProductHandler implements IProductHandler {
                 .flatMap(productServicePort::deleteProduct)
                 .map(productDtoMapper::toProductDto)
                 .flatMap(dtoResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse))
+                .onErrorResume(ProductNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                );
     }
 
     @Override
@@ -52,7 +77,16 @@ public class ProductHandler implements IProductHandler {
                 .flatMap(productServicePort::addProductStock)
                 .map(productDtoMapper::toProductDto)
                 .flatMap(dtoResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse))
+                .onErrorResume(ProductNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(ProductStockInvalidException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                );
     }
 
     @Override
@@ -62,7 +96,12 @@ public class ProductHandler implements IProductHandler {
                 .map(productDtoMapper::toProductTopStockDto)
                 .collectList()
                 .flatMap(products -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(products));
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(products))
+                .onErrorResume(FranchiseNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                );
     }
 
     @Override
@@ -72,6 +111,15 @@ public class ProductHandler implements IProductHandler {
                 .flatMap(productServicePort::updateProductName)
                 .map(productDtoMapper::toProductDto)
                 .flatMap(dtoResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse));
+                        .contentType(MediaType.APPLICATION_JSON).bodyValue(dtoResponse))
+                .onErrorResume(ProductNameEmptyException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                ).onErrorResume(ProductNotFoundException.class, ex ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ex.getMessage())
+                );
     }
 }
