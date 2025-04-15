@@ -49,7 +49,6 @@ class ProductCaseTest {
                 .expectNext(product)
                 .verifyComplete();
     }
-
     @Test
     void createProduct_throwsErrorWhenBranchDoesNotExist() {
         Integer branchId = 1;
@@ -288,4 +287,5 @@ class ProductCaseTest {
                 .expectError(ProductNameEmptyException.class)
                 .verify();
     }
+
 }
