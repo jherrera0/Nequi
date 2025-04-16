@@ -1,8 +1,8 @@
 spring:
   r2dbc:
-    url: r2dbc:mysql://nequi.coxgk8a6a9uv.us-east-1.rds.amazonaws.com:3306/nequi?sslMode=DISABLED&tcpKeepAlive=true
-    username: admin
-    password: uq0YpeHk1155VghDiAUG
+    url: r2dbc:mysql://${URL}:${PORT}/${DB_NAME}?${URL_VALUES}
+    username: ${USER_DB_USERNAME}
+    password: ${USER_DB_PASSWORD}
     pool:
       enabled: true
       initial-size: 5
