@@ -11,6 +11,7 @@ public class ConstRoute {
     public static final String GET_TOP_STOCK_PRODUCTS_BY_BRANCH_ASSOCIATED_TO_FRANCHISE
             = "/getTopStockProductsByBranchAssociatedToFranchise/{franchiseId}";
     public static final String UPDATE_NAME = "/updateName";
+    public static final String HEALTH_CHECK = "/health";
 
 
     private ConstRoute() {}
