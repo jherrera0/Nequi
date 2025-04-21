@@ -38,6 +38,8 @@ docker run -p 8090:8090 \
 
 ## 🚀 2. Subir Imagen a Amazon ECR
 
+IMPORTANTE: Es necesario que el contenedor se llame "franchise-api"
+
 ### Paso 1: Autenticarse en ECR
 
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 047719641355.dkr.ecr.us-east-1.amazonaws.com
