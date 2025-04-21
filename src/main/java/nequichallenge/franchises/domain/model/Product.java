@@ -4,6 +4,7 @@ public class Product {
     private Integer id;
     private String name;
     private Integer stock;
+    private Boolean isActive;
 
     public Product() {
 
@@ -37,5 +38,13 @@ public class Product {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 }

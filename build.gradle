@@ -42,6 +42,8 @@ dependencies {
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0.Beta2'
 
 	// Reactor Test
+	testImplementation 'com.h2database:h2'
+	testImplementation 'io.r2dbc:r2dbc-h2'
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -49,4 +51,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+	archiveFileName = 'app.jar'
 }
