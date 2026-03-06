@@ -1,5 +1,5 @@
 aws_region      = "us-east-1"
-project_name    = "franchise-api-test-9"
+project_name    = "franchise-api-test"
 vpc_cidr        = "10.0.0.0/16"
 
 public_subnets  = [
@@ -14,4 +14,4 @@ private_subnets = [
 
 rds_password    = "rootpassword"
 
-docker_image    = "047719641355.dkr.ecr.us-east-1.amazonaws.com/franchise-api:latest"
+docker_image    = "294342039174.dkr.ecr.us-east-1.amazonaws.com/franchise-api"
