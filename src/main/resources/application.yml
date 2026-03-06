@@ -13,3 +13,26 @@ spring:
 
 server:
   port: 8090
+  # Permite que Spring resuelva correctamente los headers de proxy (X-Forwarded-*)
+  forward-headers-strategy: framework
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
+    # URL base del servidor público (CloudFront). Cambia este valor si cambia la distribución.
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: franchise
+        url: /v3/api-docs?group=franchise
+      - name: branch
+        url: /v3/api-docs?group=branch
+      - name: product
+        url: /v3/api-docs?group=product
+  # Necesario para que springdoc no redirija a http interno sino a la ruta relativa
+  use-management-port: false
+  cache:
+    disabled: true

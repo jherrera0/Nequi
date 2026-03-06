@@ -8,11 +8,13 @@ API RESTful reactiva para la gestión de franquicias, sucursales y productos, co
 
 1. [Requisitos Previos](#-requisitos-previos)
 2. [Permisos IAM Requeridos](#-permisos-iam-requeridos)
-3. [Ejecutar Localmente con Docker](#-1-ejecutar-la-imagen-docker-localmente)
-4. [Subir Imagen a Amazon ECR](#-2-subir-imagen-a-amazon-ecr)
-5. [Desplegar en AWS con Terraform](#-3-desplegar-en-aws-con-terraform)
-6. [Notas](#-notas)
-7. [Soporte](#-soporte)
+3. [Arquitectura del Sistema](#-arquitectura-del-sistema)
+4. [Ejecutar Localmente con Docker](#-1-ejecutar-la-imagen-docker-localmente)
+5. [Subir Imagen a Amazon ECR](#-2-subir-imagen-a-amazon-ecr)
+6. [Desplegar en AWS con Terraform](#-3-desplegar-en-aws-con-terraform)
+7. [Swagger UI](#-swagger-ui)
+8. [Notas](#-notas)
+9. [Soporte](#-soporte)
 
 ---
 
@@ -35,17 +37,18 @@ Asegúrate de tener instaladas y configuradas las siguientes herramientas antes 
 
 El usuario o rol de AWS utilizado para desplegar esta infraestructura debe tener adjuntas las siguientes políticas administradas por AWS. En este proyecto están asignadas al grupo **`nequi`**.
 
-| Política IAM | Servicio | Descripción |
-|---|---|---|
-| `AmazonAPIGatewayAdministrator` | API Gateway | Crear, configurar y administrar todos los recursos de Amazon API Gateway. |
-| `AmazonEC2ContainerRegistryFullAccess` | ECR | Subir, descargar y administrar imágenes Docker en Amazon ECR. |
-| `AmazonECS_FullAccess` | ECS | Crear y administrar clústeres, servicios y tareas en ECS Fargate. |
-| `AmazonRDSDataFullAccess` | RDS | Ejecutar consultas SQL sobre bases de datos RDS mediante el Data API. |
-| `AmazonRDSFullAccess` | RDS | Crear, modificar y eliminar instancias de base de datos RDS. |
-| `AmazonVPCFullAccess` | VPC | Administrar VPCs, subredes, tablas de ruteo, IGW y NAT Gateways. |
-| `ElasticLoadBalancingFullAccess` | ALB | Crear y administrar Application Load Balancers. |
-| `IAMFullAccess` | IAM | Crear y administrar roles y políticas IAM necesarios para ECS. |
-| `SecretsManagerReadWrite` | Secrets Manager | Leer y escribir secretos (ej. credenciales de base de datos). |
+| Política IAM | Servicio        | Descripción                                                               |
+|---|-----------------|---------------------------------------------------------------------------|
+| `AmazonAPIGatewayAdministrator` | API Gateway     | Crear, configurar y administrar todos los recursos de Amazon API Gateway. |
+| `AmazonEC2ContainerRegistryFullAccess` | ECR             | Subir, descargar y administrar imágenes Docker en Amazon ECR.             |
+| `AmazonECS_FullAccess` | ECS             | Crear y administrar clústeres, servicios y tareas en ECS Fargate.         |
+| `AmazonRDSDataFullAccess` | RDS             | Ejecutar consultas SQL sobre bases de datos RDS mediante el Data API.     |
+| `AmazonRDSFullAccess` | RDS             | Crear, modificar y eliminar instancias de base de datos RDS.              |
+| `AmazonVPCFullAccess` | VPC             | Administrar VPCs, subredes, tablas de ruteo, IGW y NAT Gateways.          |
+| `ElasticLoadBalancingFullAccess` | ALB             | Crear y administrar Application Load Balancers.                           |
+| `IAMFullAccess` | IAM             | Crear y administrar roles y políticas IAM necesarios para ECS.            |
+| `SecretsManagerReadWrite` | Secrets Manager | Leer y escribir secretos (ej. credenciales de base de datos).             |
+| `CloudFrontFullAccess` | CloudFront      | Permite disponibiliar contenido front                                     |
 
 > ⚠️ **Advertencia de seguridad:** `IAMFullAccess` otorga privilegios elevados. En entornos productivos se recomienda reemplazarlo por una política personalizada con permisos mínimos necesarios.
 
@@ -56,6 +59,46 @@ El usuario o rol de AWS utilizado para desplegar esta infraestructura debe tener
 3. En la pestaña **Permisos**, haz clic en **Agregar permisos → Adjuntar políticas**.
 4. Busca y selecciona cada política de la tabla anterior.
 5. Haz clic en **Agregar permisos** para confirmar.
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+```
+Internet
+   │
+   ▼
+┌──────────────────────┐
+│     CloudFront       │  ← Punto de entrada público (HTTPS)
+│  (CDN + caché UI)    │    Expone la API y Swagger UI
+└──────────┬───────────┘
+           │ HTTPS
+           ▼
+┌──────────────────────┐
+│   API Gateway (HTTP) │  ← Enruta peticiones de API y Swagger
+└──────────┬───────────┘
+           │ HTTP
+           ▼
+┌──────────────────────┐
+│  ALB (Application    │  ← Balanceo de carga interno
+│  Load Balancer)      │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐     ┌───────────────────────┐
+│   ECS Fargate        │────▶│  RDS MySQL (privada)   │
+│  (franchise-api)     │     │  Secrets Manager       │
+└──────────────────────┘     └───────────────────────┘
+```
+
+| Componente | Descripción |
+|---|---|
+| **CloudFront** | CDN global que expone el sistema por HTTPS. Cachea los recursos estáticos de Swagger UI y reenvía las llamadas a la API sin caché. |
+| **API Gateway** | Enruta las peticiones HTTP hacia el ALB. Incluye rutas para la API de negocio y para Swagger (`/swagger-ui/*`, `/v3/api-docs*`, `/webjars/*`). |
+| **ALB** | Distribuye el tráfico entre las tareas ECS Fargate dentro de la VPC privada. |
+| **ECS Fargate** | Ejecuta el contenedor `franchise-api` (Spring WebFlux) sin necesidad de gestionar servidores. |
+| **RDS MySQL** | Base de datos relacional en subred privada, sin acceso directo desde internet. |
+| **Secrets Manager** | Almacena las credenciales de la base de datos de forma segura. |
 
 ---
 
@@ -175,6 +218,46 @@ terraform apply -var-file="terraform.tfvars"
 ```
 
 > 💡 Terraform pedirá confirmación antes de crear los recursos. Escribe `yes` para continuar.
+
+---
+
+## 📖 Swagger UI
+
+La documentación interactiva de la API está disponible a través de **CloudFront** una vez desplegada la infraestructura.
+
+### URL de acceso
+
+Tras ejecutar `terraform apply`, el output `swagger_ui_url` mostrará la URL directa:
+
+```bash
+terraform output swagger_ui_url
+# Ejemplo: https://d1abc123xyz.cloudfront.net/swagger-ui/index.html
+```
+
+### Rutas expuestas
+
+| Ruta | Descripción |
+|---|---|
+| `/swagger-ui/index.html` | Interfaz gráfica de Swagger UI |
+| `/v3/api-docs` | Especificación OpenAPI 3.0 en formato JSON |
+| `/v3/api-docs/swagger-config` | Configuración de Swagger |
+| `/webjars/**` | Recursos estáticos de Swagger UI |
+
+### Comportamiento de caché en CloudFront
+
+| Ruta | TTL | Motivo |
+|---|---|---|
+| `/swagger-ui/*` | 1 hora | Recursos semi-estáticos de la UI |
+| `/v3/api-docs*` | 5 minutos | Puede cambiar en cada despliegue |
+| `/webjars/*` | 24 horas – 1 año | Recursos completamente estáticos |
+| `/*` (API) | Sin caché | Las respuestas de la API no deben cachearse |
+
+> 💡 Si actualizas la aplicación y los docs no se refrescan, puedes invalidar la caché de CloudFront con:
+> ```bash
+> aws cloudfront create-invalidation \
+>   --distribution-id $(terraform output -raw cloudfront_distribution_id) \
+>   --paths "/v3/api-docs*" "/swagger-ui/*"
+> ```
 
 ---
 

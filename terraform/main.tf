@@ -73,3 +73,10 @@ module "api_gateway" {
   name          = var.project_name
   alb_dns_name  = module.alb.alb_dns_name
 }
+
+module "cloudfront" {
+  source               = "./modules/cloudfront"
+  name                 = var.project_name
+  api_gateway_endpoint = module.api_gateway.api_endpoint
+}
+
