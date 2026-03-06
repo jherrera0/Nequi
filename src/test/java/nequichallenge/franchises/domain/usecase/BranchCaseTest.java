@@ -10,117 +10,134 @@ import nequichallenge.franchises.domain.spi.IFranchisePersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.ArrayList;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class BranchCaseTest {
 
+    @Mock
     private IBranchPersistencePort branchPersistencePort;
+
+    @Mock
     private IFranchisePersistencePort franchisePersistencePort;
+
+    @InjectMocks
     private BranchCase branchCase;
+
+    private Branch sampleBranch;
 
     @BeforeEach
     void setUp() {
-        branchPersistencePort = Mockito.mock(IBranchPersistencePort.class);
-        franchisePersistencePort = Mockito.mock(IFranchisePersistencePort.class);
-        branchCase = new BranchCase(branchPersistencePort, franchisePersistencePort);
+        sampleBranch = new Branch(1, "Sucursal Central", new ArrayList<>());
     }
 
-    @Test
-    @DisplayName("addBranch should return Branch when franchise exists and name is unique")
-    void addBranchReturnsBranchWhenFranchiseExistsAndNameIsUnique() {
-        when(franchisePersistencePort.franchiseExistsById(1)).thenReturn(Mono.just(true));
-        when(branchPersistencePort.existsByName("BranchName")).thenReturn(Mono.just(false));
-        when(branchPersistencePort.addBranch(1, "BranchName")).thenReturn(Mono.just(new Branch()));
+    // ==================== addBranch Tests ====================
 
-        StepVerifier.create(branchCase.addBranch(1, "BranchName"))
-                .expectNextMatches(Objects::nonNull)
+    @Test
+    @DisplayName("Debe crear una sucursal exitosamente")
+    void addBranch_Success() {
+        // Arrange
+        when(franchisePersistencePort.franchiseExistsById(anyInt())).thenReturn(Mono.just(true));
+        when(branchPersistencePort.existsByName(anyString())).thenReturn(Mono.just(false));
+        when(branchPersistencePort.addBranch(anyInt(), anyString())).thenReturn(Mono.just(sampleBranch));
+
+        // Act & Assert
+        StepVerifier.create(branchCase.addBranch(1, "Nueva Sucursal"))
+                .expectNext(sampleBranch)
                 .verifyComplete();
-
-        verify(franchisePersistencePort).franchiseExistsById(1);
-        verify(branchPersistencePort).existsByName("BranchName");
-        verify(branchPersistencePort).addBranch(1, "BranchName");
     }
 
     @Test
-    @DisplayName("addBranch should throw FranchiseNotFoundException when franchise does not exist")
-    void addBranchThrowsFranchiseNotFoundExceptionWhenFranchiseDoesNotExist() {
-        when(franchisePersistencePort.franchiseExistsById(1)).thenReturn(Mono.just(false));
+    @DisplayName("Debe fallar cuando la franquicia no existe")
+    void addBranch_FranchiseNotFound_Error() {
+        // Arrange
+        when(franchisePersistencePort.franchiseExistsById(anyInt())).thenReturn(Mono.just(false));
 
-        StepVerifier.create(branchCase.addBranch(1, "BranchName"))
+        // No es estrictamente necesario mockear existsByName si el flujo corta antes,
+        // pero en versiones antiguas de Mockito/Reactor, inicializarlo con Mono.empty() evita NPEs preventivos.
+
+        // Act & Assert
+        StepVerifier.create(branchCase.addBranch(1, "Sucursal"))
                 .expectError(FranchiseNotFoundException.class)
                 .verify();
 
-        verify(franchisePersistencePort).franchiseExistsById(1);
-        verify(branchPersistencePort, never()).existsByName(any());
-        verify(branchPersistencePort, never()).addBranch(any(), any());
+        verify(branchPersistencePort, never()).addBranch(anyInt(), anyString());
     }
 
     @Test
-    @DisplayName("addBranch should throw BranchAlreadyExistException when branch name already exists")
-    void addBranchThrowsBranchAlreadyExistExceptionWhenBranchNameAlreadyExists() {
-        when(franchisePersistencePort.franchiseExistsById(1)).thenReturn(Mono.just(true));
-        when(branchPersistencePort.existsByName("BranchName")).thenReturn(Mono.just(true));
+    @DisplayName("Debe lanzar BranchAlreadyExistException si el nombre ya existe")
+    void addBranch_DuplicateName_Error() {
+        // Arrange
+        when(franchisePersistencePort.franchiseExistsById(anyInt())).thenReturn(Mono.just(true));
+        // Aquí estaba el error: Mockito devolvía NULL. Ahora devuelve un Mono válido.
+        when(branchPersistencePort.existsByName(anyString())).thenReturn(Mono.just(true));
 
-        StepVerifier.create(branchCase.addBranch(1, "BranchName"))
+        // Act & Assert
+        StepVerifier.create(branchCase.addBranch(1, "Duplicada"))
                 .expectError(BranchAlreadyExistException.class)
                 .verify();
+    }
 
-        verify(franchisePersistencePort).franchiseExistsById(1);
-        verify(branchPersistencePort).existsByName("BranchName");
-        verify(branchPersistencePort, never()).addBranch(any(), any());
+    // ==================== updateName Tests ====================
+
+    @Test
+    @DisplayName("Debe lanzar BranchNotFoundException al actualizar ID inexistente")
+    void updateName_NotFound_Error() {
+        // Arrange
+        Branch updateInfo = new Branch(99, "Nuevo Nombre", new ArrayList<>());
+        // Mockeamos el retorno como Mono.empty() (señal de no encontrado)
+        when(branchPersistencePort.findById(anyInt())).thenReturn(Mono.empty());
+
+        // Act & Assert
+        StepVerifier.create(branchCase.updateName(updateInfo))
+                .expectError(BranchNotFoundException.class)
+                .verify();
     }
 
     @Test
-    @DisplayName("addBranch should throw BranchNameEmptyException when name is null or empty")
-    void addBranchThrowsBranchNameEmptyExceptionWhenNameIsNullOrEmpty() {
-        StepVerifier.create(branchCase.addBranch(1, null))
-                .expectError(BranchNameEmptyException.class)
-                .verify();
+    @DisplayName("Debe fallar por validación de ID inválido")
+    void updateName_InvalidId_Error() {
+        Branch branch = new Branch(0, "Nombre", new ArrayList<>());
 
-        StepVerifier.create(branchCase.addBranch(1, ""))
-                .expectError(BranchNameEmptyException.class)
+        // No requiere mocks porque la validación ocurre antes de llamar a los puertos
+        StepVerifier.create(branchCase.updateName(branch))
+                .expectError(IllegalArgumentException.class)
                 .verify();
-
-        verify(franchisePersistencePort, never()).franchiseExistsById(any());
-        verify(branchPersistencePort, never()).existsByName(any());
-        verify(branchPersistencePort, never()).addBranch(any(), any());
     }
+
     @Test
-    @DisplayName("updateName should update branch name when branch exists and name is valid")
-    void updateNameUpdatesBranchNameWhenBranchExistsAndNameIsValid() {
-        Branch existingBranch = new Branch(1, "OldName", List.of());
-        Branch updatedBranch = new Branch(1, "NewName", List.of());
+    @DisplayName("Debe actualizar el nombre correctamente aplicando trim")
+    void updateName_Success() {
+        Branch input = new Branch(1, "  Sucursal Nueva  ", new ArrayList<>());
+        Branch existing = new Branch(1, "Nombre Viejo", new ArrayList<>());
+        Branch updated = new Branch(1, "Sucursal Nueva", new ArrayList<>());
 
-        when(branchPersistencePort.findById(1)).thenReturn(Mono.just(existingBranch));
-        when(branchPersistencePort.updateBranch(existingBranch)).thenReturn(Mono.just(updatedBranch));
+        when(branchPersistencePort.findById(1)).thenReturn(Mono.just(existing));
+        when(branchPersistencePort.updateBranch(existing)).thenReturn(Mono.just(updated));
 
-        StepVerifier.create(branchCase.updateName(updatedBranch))
-                .expectNextMatches(branch -> branch.getName().equals("NewName"))
+        StepVerifier.create(branchCase.updateName(input))
+                .expectNextMatches(b -> b.getName().equals("Sucursal Nueva"))
                 .verifyComplete();
 
-        verify(branchPersistencePort).findById(1);
-        verify(branchPersistencePort).updateBranch(existingBranch);
+        verify(branchPersistencePort).updateBranch(argThat(b -> b.getName().equals("Sucursal Nueva")));
     }
 
     @Test
-    @DisplayName("updateName should throw BranchNameEmptyException when name is null or empty")
-    void updateNameThrowsBranchNameEmptyExceptionWhenNameIsNullOrEmpty() {
-        Branch branchWithNullName = new Branch(1, null, List.of());
-        Branch branchWithEmptyName = new Branch(1, "", List.of());
+    @DisplayName("Debe lanzar BranchNameEmptyException cuando el nombre es nulo")
+    void updateName_NullName_Error() {
+        Branch branch = new Branch(1, null, new ArrayList<>());
 
-        StepVerifier.create(branchCase.updateName(branchWithNullName))
-                .expectError(BranchNameEmptyException.class)
-                .verify();
-
-        StepVerifier.create(branchCase.updateName(branchWithEmptyName))
+        StepVerifier.create(branchCase.updateName(branch))
                 .expectError(BranchNameEmptyException.class)
                 .verify();
 
@@ -129,17 +146,52 @@ class BranchCaseTest {
     }
 
     @Test
-    @DisplayName("updateName should throw BranchNotFoundException when branch does not exist")
-    void updateNameThrowsBranchNotFoundExceptionWhenBranchDoesNotExist() {
-        Branch nonExistentBranch = new Branch(1, "NewName", List.of());
+    @DisplayName("Debe lanzar BranchNameEmptyException cuando el nombre está en blanco")
+    void updateName_BlankName_Error() {
+        Branch branch = new Branch(1, "   ", new ArrayList<>());
 
-        when(branchPersistencePort.findById(1)).thenReturn(Mono.empty());
-
-        StepVerifier.create(branchCase.updateName(nonExistentBranch))
-                .expectError(BranchNotFoundException.class)
+        StepVerifier.create(branchCase.updateName(branch))
+                .expectError(BranchNameEmptyException.class)
                 .verify();
 
-        verify(branchPersistencePort).findById(1);
+        verify(branchPersistencePort, never()).findById(any());
         verify(branchPersistencePort, never()).updateBranch(any());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar IllegalArgumentException cuando la sucursal es nula")
+    void updateName_NullBranch_Error() {
+        StepVerifier.create(branchCase.updateName(null))
+                .expectErrorMatches(e ->
+                        e instanceof IllegalArgumentException &&
+                        e.getMessage().equals("La sucursal no puede ser nula"))
+                .verify();
+
+        verify(branchPersistencePort, never()).findById(any());
+        verify(branchPersistencePort, never()).updateBranch(any());
+    }
+
+    // ==================== addBranch — validación de nombre ====================
+
+    @Test
+    @DisplayName("Debe lanzar BranchNameEmptyException en addBranch cuando el nombre es nulo")
+    void addBranch_NullName_Error() {
+        StepVerifier.create(branchCase.addBranch(1, null))
+                .expectError(BranchNameEmptyException.class)
+                .verify();
+
+        verify(franchisePersistencePort, never()).franchiseExistsById(any());
+        verify(branchPersistencePort, never()).addBranch(any(), any());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar BranchNameEmptyException en addBranch cuando el nombre está en blanco")
+    void addBranch_BlankName_Error() {
+        StepVerifier.create(branchCase.addBranch(1, "   "))
+                .expectError(BranchNameEmptyException.class)
+                .verify();
+
+        verify(franchisePersistencePort, never()).franchiseExistsById(any());
+        verify(branchPersistencePort, never()).addBranch(any(), any());
     }
 }

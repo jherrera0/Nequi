@@ -17,6 +17,15 @@ repositories {
 	mavenCentral()
 }
 
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.18.0'
+            details.because 'CVE-2025-48924: StackOverflowError in ClassUtils.getClass() fixed in 3.18.0'
+        }
+    }
+}
+
 dependencies {
 	// Spring Boot + WebFlux
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
