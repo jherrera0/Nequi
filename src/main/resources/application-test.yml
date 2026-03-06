@@ -11,6 +11,13 @@ spring:
       max-create-connection-time: 10s
       validation-query: SELECT 1
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 logging:
   level:
     org.springframework.r2dbc: DEBUG
+

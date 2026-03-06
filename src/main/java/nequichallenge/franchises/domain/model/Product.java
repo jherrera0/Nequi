@@ -47,4 +47,26 @@ public class Product {
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
+
+    public Product withActiveStatus(Boolean active) {
+        Product copy = new Product(this.id, this.name, this.stock);
+        copy.isActive = active;
+        return copy;
+    }
+
+    public Product withStock(Integer newStock) {
+        Product copy = new Product(this.id, this.name, this.stock+newStock);
+        copy.isActive = this.isActive;
+        return copy;
+    }
+
+    public Product withName(String newName) {
+        Product copy = new Product(this.id, newName, this.stock);
+        copy.isActive = this.isActive;
+        return copy;
+    }
+
+    public ProductTopStock toTopStock(Branch branch) {
+        return new ProductTopStock(branch.getId(), branch.getName(), this.id, this.name, this.stock);
+    }
 }

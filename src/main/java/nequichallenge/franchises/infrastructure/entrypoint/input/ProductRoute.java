@@ -187,7 +187,7 @@ public class ProductRoute {
                     )
             ),
             @RouterOperation(
-                    path = "/product/add-product-stock",
+                    path = "/product/addProductStock",
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
                     beanClass = IProductHandler.class,
@@ -206,7 +206,7 @@ public class ProductRoute {
                                                     value = """
                                                             {
                                                               "id": 10,
-                                                              "quantity": 5
+                                                              "stock": 5
                                                             }
                                                             """
                                             )
@@ -245,7 +245,7 @@ public class ProductRoute {
                                                                       "status": 400,
                                                                       "error": "Bad Request",
                                                                       "message": "Product does not exist or invalid quantity",
-                                                                      "path": "/product/add-product-stock"
+                                                                      "path": "/product/addProductStock"
                                                                     }
                                                                     """
                                                     )

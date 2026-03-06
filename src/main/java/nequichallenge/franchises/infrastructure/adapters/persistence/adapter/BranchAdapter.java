@@ -47,10 +47,11 @@ public class BranchAdapter implements IBranchPersistencePort {
     @Override
     public Mono<Branch> updateBranch(Branch existedBranch) {
         return branchRepository.findById(existedBranch.getId())
-                .flatMap(entity -> {
+                .map(entity -> {
                     entity.setName(existedBranch.getName());
-                    return branchRepository.save(entity);
+                    return entity;
                 })
+                .flatMap(branchRepository::save)
                 .map(branchEntityMapper::toModel);
     }
 }
