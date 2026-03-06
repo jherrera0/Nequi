@@ -1,0 +1,24 @@
+# Build outputs
+build/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Docs
+README.md
+HELP.md
+
+# Tests no necesarios en el contexto de build
+src/test/
+
+# Terraform
+terraform/
+
