@@ -2,26 +2,26 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "rds_secret" {
-  source   = "./modules/rds_secret"
-  name     = var.project_name
-  username = "admin"
-  password = var.rds_password
-}
-
 module "vpc" {
   source          = "./modules/network"
   name            = var.project_name
+  aws_region      = var.aws_region
   cidr_block      = var.vpc_cidr
   public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
-  aws_region      = var.aws_region
 }
 
 module "security_groups" {
   source = "./modules/security_groups"
   name   = var.project_name
   vpc_id = module.vpc.vpc_id
+}
+
+module "rds_secret" {
+  source   = "./modules/rds_secret"
+  name     = var.project_name
+  username = "admin"
+  password = var.rds_password
 }
 
 module "rds_mysql" {

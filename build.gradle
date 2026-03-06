@@ -44,7 +44,7 @@ dependencies {
 
 	//documentation
 // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-ui
-	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
+	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.16")
 
 	// MapStruct
 	implementation 'org.mapstruct:mapstruct:1.6.0.Beta2'

@@ -11,7 +11,7 @@ variable "engine" {
 
 variable "engine_version" {
   type        = string
-  default     = "8.0.35"
+  default     = "8.0"
 }
 
 variable "instance_class" {
@@ -67,7 +67,7 @@ variable "multi_az" {
 
 variable "backup_retention_period" {
   type        = number
-  default     = 7
+  default     = 0
 }
 
 variable "vpc_security_group_ids" {

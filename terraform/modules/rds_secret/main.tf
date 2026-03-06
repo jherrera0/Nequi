@@ -1,6 +1,7 @@
 resource "aws_secretsmanager_secret" "this" {
-  name        = "${var.name}-rds-credentials"
-  description = "RDS credentials for ${var.name}"
+  name_prefix             = "${var.name}-rds-credentials-"
+  description             = "RDS credentials for ${var.name}"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "this" {

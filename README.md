@@ -1,28 +1,75 @@
-# 📦 Franchise API – Docker + Terraform Deployment
+# 📦 Franchise API – Despliegue con Docker y Terraform
 
-Este proyecto contiene una API que puede ejecutarse localmente usando Docker y desplegarse en AWS mediante Terraform y ECS Fargate.
+API RESTful reactiva para la gestión de franquicias, sucursales y productos, construida con **Spring WebFlux** y desplegada en **AWS ECS Fargate** mediante **Terraform**.
+
+---
+
+## 📑 Tabla de Contenidos
+
+1. [Requisitos Previos](#-requisitos-previos)
+2. [Permisos IAM Requeridos](#-permisos-iam-requeridos)
+3. [Ejecutar Localmente con Docker](#-1-ejecutar-la-imagen-docker-localmente)
+4. [Subir Imagen a Amazon ECR](#-2-subir-imagen-a-amazon-ecr)
+5. [Desplegar en AWS con Terraform](#-3-desplegar-en-aws-con-terraform)
+6. [Notas](#-notas)
+7. [Soporte](#-soporte)
 
 ---
 
 ## 🔧 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalados y configurados los siguientes elementos:
+Asegúrate de tener instaladas y configuradas las siguientes herramientas antes de continuar:
 
-- Docker: https://docs.docker.com/get-docker/
-- Terraform: https://developer.hashicorp.com/terraform/downloads
-- AWS CLI (Ejecuta `aws configure`)
-- Permisos necesarios en AWS para trabajar con: Amazon ECR, ECS, RDS, VPC, Subnets, etc.
+| Herramienta | Versión Mínima | Enlace |
+|---|---|---|
+| Docker | 20.x | https://docs.docker.com/get-docker/ |
+| Terraform | 1.x | https://developer.hashicorp.com/terraform/downloads |
+| AWS CLI | 2.x | https://aws.amazon.com/cli/ |
+| Java (JDK) | 17 | https://adoptium.net/ |
+
+> 💡 Configura tus credenciales de AWS ejecutando `aws configure` antes de cualquier despliegue.
+
+---
+
+## 🔐 Permisos IAM Requeridos
+
+El usuario o rol de AWS utilizado para desplegar esta infraestructura debe tener adjuntas las siguientes políticas administradas por AWS. En este proyecto están asignadas al grupo **`nequi`**.
+
+| Política IAM | Servicio | Descripción |
+|---|---|---|
+| `AmazonAPIGatewayAdministrator` | API Gateway | Crear, configurar y administrar todos los recursos de Amazon API Gateway. |
+| `AmazonEC2ContainerRegistryFullAccess` | ECR | Subir, descargar y administrar imágenes Docker en Amazon ECR. |
+| `AmazonECS_FullAccess` | ECS | Crear y administrar clústeres, servicios y tareas en ECS Fargate. |
+| `AmazonRDSDataFullAccess` | RDS | Ejecutar consultas SQL sobre bases de datos RDS mediante el Data API. |
+| `AmazonRDSFullAccess` | RDS | Crear, modificar y eliminar instancias de base de datos RDS. |
+| `AmazonVPCFullAccess` | VPC | Administrar VPCs, subredes, tablas de ruteo, IGW y NAT Gateways. |
+| `ElasticLoadBalancingFullAccess` | ALB | Crear y administrar Application Load Balancers. |
+| `IAMFullAccess` | IAM | Crear y administrar roles y políticas IAM necesarios para ECS. |
+| `SecretsManagerReadWrite` | Secrets Manager | Leer y escribir secretos (ej. credenciales de base de datos). |
+
+> ⚠️ **Advertencia de seguridad:** `IAMFullAccess` otorga privilegios elevados. En entornos productivos se recomienda reemplazarlo por una política personalizada con permisos mínimos necesarios.
+
+### Pasos para asignar los permisos
+
+1. Inicia sesión en la consola de AWS con un usuario administrador.
+2. Navega a **IAM → Grupos de usuarios** y selecciona el grupo `nequi`.
+3. En la pestaña **Permisos**, haz clic en **Agregar permisos → Adjuntar políticas**.
+4. Busca y selecciona cada política de la tabla anterior.
+5. Haz clic en **Agregar permisos** para confirmar.
 
 ---
 
 ## 🐳 1. Ejecutar la Imagen Docker Localmente
 
-### Paso 1: Construcción de la imagen
+### Paso 1 – Construir la imagen
 
+```bash
 docker build -t franchise-api .
+```
 
-### Paso 2: Ejecutar la imagen
+### Paso 2 – Ejecutar el contenedor
 
+```bash
 docker run -p 8090:8090 \
   -e URL=<URL de la base de datos> \
   -e PORT=<Puerto de la base de datos> \
@@ -31,39 +78,61 @@ docker run -p 8090:8090 \
   -e USER_DB_USERNAME=<Usuario de base de datos> \
   -e USER_DB_PASSWORD=<Contraseña de base de datos> \
   franchise-api
+```
 
-> Nota: Asegúrate de reemplazar los valores de entorno por los datos reales de tu base de datos.
+| Variable de entorno | Descripción |
+|---|---|
+| `URL` | Host o URL de conexión a la base de datos |
+| `PORT` | Puerto de la base de datos (ej. `3306`) |
+| `DB_NAME` | Nombre del esquema/base de datos |
+| `URL_VALUES` | Parámetros adicionales de la cadena de conexión |
+| `USER_DB_USERNAME` | Usuario de la base de datos |
+| `USER_DB_PASSWORD` | Contraseña de la base de datos |
+
+> 💡 Reemplaza cada `<valor>` con los datos reales de tu entorno.
 
 ---
 
 ## 🚀 2. Subir Imagen a Amazon ECR
 
-IMPORTANTE: Es necesario que el contenedor se llame "franchise-api"
+> ⚠️ **Importante:** El nombre del contenedor debe ser exactamente `franchise-api` para que Terraform lo referencie correctamente.
 
-### Paso 1: Autenticarse en ECR
+### Paso 1 – Autenticarse en ECR
 
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 047719641355.dkr.ecr.us-east-1.amazonaws.com
+```bash
+aws ecr get-login-password --region us-east-1 \
+  | docker login --username AWS --password-stdin \
+  047719641355.dkr.ecr.us-east-1.amazonaws.com
+```
 
-### Paso 2: Etiquetar la imagen
+### Paso 2 – Etiquetar la imagen
 
-docker tag franchise-api:latest 047719641355.dkr.ecr.us-east-1.amazonaws.com/franchise-api:latest
+```bash
+docker tag franchise-api:latest \
+  047719641355.dkr.ecr.us-east-1.amazonaws.com/franchise-api:latest
+```
 
-### Paso 3: Subir la imagen
+### Paso 3 – Subir la imagen
 
+```bash
 docker push 047719641355.dkr.ecr.us-east-1.amazonaws.com/franchise-api:latest
+```
 
 ---
 
 ## 🌐 3. Desplegar en AWS con Terraform
 
-### Paso 1: Modificar el archivo terraform.tfvars
+### Paso 1 – Configurar las variables en `terraform.tfvars`
 
-aws_region      = "<Región AWS deseada>"
-project_name    = "<Nombre del proyecto>"
+Edita el archivo `terraform/terraform.tfvars` con los valores de tu entorno:
 
-vpc_cidr        = "10.0.0.0/16"
+```hcl
+aws_region   = "<Región AWS deseada>"        # Ej: "us-east-1"
+project_name = "<Nombre del proyecto>"        # Ej: "franchise-api"
 
-public_subnets  = [
+vpc_cidr = "10.0.0.0/16"
+
+public_subnets = [
   "10.0.1.0/24",
   "10.0.2.0/24"
 ]
@@ -73,43 +142,58 @@ private_subnets = [
   "10.0.4.0/24"
 ]
 
-rds_password    = "<Contraseña de RDS>"
-
-docker_image    = "<URI de la imagen Docker en ECR>"
+rds_password = "<Contraseña de RDS>"
+docker_image = "<URI de la imagen en ECR>"   # Ej: "047719641355.dkr.ecr.us-east-1.amazonaws.com/franchise-api:latest"
+```
 
 ### Descripción de variables
 
-Variable         | Descripción
-------------------|--------------------------------------------------------------
-aws_region        | Región donde se realizará el despliegue en AWS
-project_name      | Nombre del proyecto (usado como prefijo en recursos)
-vpc_cidr          | Rango CIDR de la VPC
-public_subnets    | Subredes públicas para ALB y NAT Gateway
-private_subnets   | Subredes privadas para ECS y RDS
-rds_password      | Contraseña del usuario principal de la base de datos RDS
-docker_image      | URL de la imagen Docker en el repositorio de Amazon ECR
+| Variable | Descripción |
+|---|---|
+| `aws_region` | Región de AWS donde se desplegará la infraestructura |
+| `project_name` | Prefijo usado para nombrar todos los recursos creados |
+| `vpc_cidr` | Bloque CIDR de la VPC principal |
+| `public_subnets` | Subredes públicas para el ALB y NAT Gateway |
+| `private_subnets` | Subredes privadas para ECS y RDS |
+| `rds_password` | Contraseña del usuario administrador de la base de datos RDS |
+| `docker_image` | URI completa de la imagen Docker almacenada en ECR |
 
----
+### Paso 2 – Inicializar y aplicar Terraform
 
-### Paso 2: Inicializar y aplicar Terraform
+```bash
+# Moverse al directorio de Terraform
+cd terraform
 
+# Inicializar los providers y módulos
 terraform init
+
+# Previsualizar los cambios
 terraform plan -var-file="terraform.tfvars"
+
+# Aplicar la infraestructura
 terraform apply -var-file="terraform.tfvars"
+```
+
+> 💡 Terraform pedirá confirmación antes de crear los recursos. Escribe `yes` para continuar.
 
 ---
 
 ## 📝 Notas
 
-- Verifica que tu perfil de AWS esté correctamente configurado (~/.aws/credentials).
-- Terraform creará los recursos con base en los valores definidos en el archivo .tfvars.
-- Puedes monitorear los logs del servicio ECS desde la consola de AWS o a través de CloudWatch.
+- Verifica que tu perfil de AWS esté correctamente configurado en `~/.aws/credentials`.
+- Terraform gestiona el estado de la infraestructura en el archivo `terraform.tfstate`. **No lo elimines ni lo versiones en Git.**
+- Los logs del servicio ECS pueden consultarse en **AWS CloudWatch → Log Groups**.
+- Para destruir todos los recursos creados por Terraform, ejecuta:
+
+```bash
+terraform destroy -var-file="terraform.tfvars"
+```
 
 ---
 
 ## 🛟 Soporte
 
-¿Tienes dudas? Puedes:
+¿Tienes dudas o encontraste un problema?
 
-- Contactar al equipo DevOps o Backend.
-- Crear un issue en este repositorio para obtener ayuda.
+- 📧 Contacta al equipo de **DevOps** o **Backend**.
+- 🐛 Crea un **issue** en este repositorio describiendo el problema.
